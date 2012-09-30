@@ -4,6 +4,8 @@
 #ifndef __SHA1_H
 #define __SHA1_H
 
+#include <stdint.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif

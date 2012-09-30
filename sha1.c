@@ -86,8 +86,8 @@ A million repetitions of "a"
 #include <string.h>
 
 // #include "os_types.h"
-  // This is where the types are defined now
-#include <stdint.h>
+// This is where the types are defined now and it is in the header file
+// #include <stdint.h>
 
 #include "sha1.h"
 

@@ -1,9 +1,11 @@
 // For the Base64 encoding/decoding
-#include "libb64/include/b64/encode.h"
-#include "libb64/include/b64/decode.h"
+// #include "libb64/include/b64/encode.h"
+// #include "libb64/include/b64/decode.h"
 
 // This is the for the sha1 of the key
+#include "base64.h"
 #include "sha1.h"
+
 
 #include <iostream>
 #include <iomanip>
@@ -36,7 +38,7 @@
 #define NONULL(size) (size-1)
 
 // The debugging flag. comment out to get rid of the debugging output.
-#define DEBUG
+// #define DEBUG
 
 // This will be the handler to clean up the server when it is finished.
 void sigint_handler(int signal)
@@ -249,7 +251,7 @@ int main(int argc, char *argv[], char *env[])
 		std::vector<std::string> headers = split_str(sbuffer, '\n');
 		std::vector<std::string>::iterator it;
 
-		std::cout << "headers: " << std::endl;
+		// std::cout << "headers: " << std::endl;
 		for(it = headers.begin(); it != headers.end(); it++)
 		{
 			std::string header = chomp_str(*it);
@@ -270,24 +272,22 @@ int main(int argc, char *argv[], char *env[])
 				SHA1_Update(&context, (uint8_t*)new_key.c_str(), new_key.length());
 				SHA1_Final(&context, digest);
 
-				base64::encoder E;
+				std::string b64string = base64_encode(digest, sizeof(digest));
+
+				#ifdef DEBUG
 				char b64[41];
-
 				digest_to_hex(digest, b64);
-
 				std::cout << "digest: " << b64 << " -- " << digest << std::endl;
-				char b64string[128];
-				memset(b64string, '\0', sizeof(b64string));
+				#endif DEBUG
 
-				// 40uDlqO8fWbqWt3fzXi0cKy13a
+				std::cout << "return key: " << b64string << std::endl;
 
-				//vXy9QC4ObRB4g6nOHoi0Hj8CV
-				// TBAn5AN3x1jxf2tysYzsY5HMYTQ=
-				// xy5XoXMQkMsiyB42z2e4Gu4Dm1w=
+				// send the new key
+				std::string new_header = get_header(b64string);
+				std::cout << new_header << std::endl;
 
-				E.encode((char*)digest, SHA1_DIGEST_SIZE+1, b64string);
+				send(client_socket[socket_count], new_header.c_str(), new_header.length());
 
-				std::cout << "b64 stream: " << b64string << std::endl;
 				break;
 			}
 		}

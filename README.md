@@ -16,9 +16,12 @@ Lots to do :D
 
 #### Sources
 
+##### Base 64 Encode
 * The new b64encoder is from: http://www.adp-gmbh.ch/cpp/common/base64.html
-	* libb64 was found from reading stackoverflow: http://stackoverflow.com/questions/342409/how-do-i-base64-encode-decode-in-c
-		* http://libb64.sourceforge.net/
 
+* libb64 was found from reading stackoverflow: http://stackoverflow.com/questions/342409/how-do-i-base64-encode-decode-in-c
+	* http://libb64.sourceforge.net/
+
+##### SHA1 Hash
 * sha1.c & sha1.h were found on stackoverflow: http://stackoverflow.com/questions/6839120/using-sha1-in-c
 	* http://www.koders.com/c/fidECEAC97A9FC979C1D3882B85349FEFAC5C8F89A5.aspx

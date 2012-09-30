@@ -40,34 +40,6 @@
 // The debugging flag. comment out to get rid of the debugging output.
 // #define DEBUG
 
-// This will be the handler to clean up the server when it is finished.
-void sigint_handler(int signal)
-{
-	exit(1);
-	return;
-}
-
-// THis is the dataframe diagram directly from the RFC 6455
-// +-+-+-+-+-------+-+-------------+-------------------------------+
-//  0                   1                   2                   3
-//  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-// +-+-+-+-+-------+-+-------------+-------------------------------+
-// |F|R|R|R| opcode|M| Payload len |    Extended payload length    |
-// |I|S|S|S|  (4)  |A|     (7)     |             (16/64)           |
-// |N|V|V|V|       |S|             |   (if payload len==126/127)   |
-// | |1|2|3|       |K|             |                               |
-// +-+-+-+-+-------+-+-------------+ - - - - - - - - - - - - - - - +
-// |     Extended payload length continued, if payload len == 127  |
-// + - - - - - - - - - - - - - - - +-------------------------------+
-// |                               | Masking-key, if MASK set to 1 |
-// +-------------------------------+-------------------------------+
-// | Masking-key (continued)       |          Payload Data         |
-// +-------------------------------- - - - - - - - - - - - - - - - +
-// :                     Payload Data continued ...                :
-// + - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - +
-// |                     Payload Data continued ...                |
-// +---------------------------------------------------------------+
-
 const std::string UUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
 
 // the frames can have multiple sizes. But we will only be sending data of 126 bytes or less... for now.
@@ -94,6 +66,140 @@ struct frame
 	// the payload as its max size for this server
 	uint8_t data[NONULL(126)];
 };
+
+// This function is called after the server has exchanged keys
+static void* worker(void *arg)
+{
+	std::cout << "Started thread: " << pthread_self() << std::endl;
+
+	int client_socket = *((int *) arg);
+	free(arg);
+
+	pthread_detach(pthread_self());
+
+	char buffer[2048];
+	int recv_size = 0;
+
+	struct frame* dataframe = (struct frame*)malloc(sizeof(struct frame));
+
+	while(1)
+	{
+		memset(buffer, '\0', 2048);
+		recv_size = recv(client_socket, buffer, 2048, 0);
+		std::cout << "recv'd: " << buffer << std::endl;
+
+		memcpy((void*)dataframe, buffer, 136);
+		std::cout << "fin : " << (int)dataframe->fin     << std::endl;
+		std::cout << "rsv1: " << (int)dataframe->rsv1    << std::endl;
+		std::cout << "rsv2: " << (int)dataframe->rsv2    << std::endl;
+		std::cout << "rsv3: " << (int)dataframe->rsv3    << std::endl;
+		std::cout << "opco: " << (int)dataframe->opcode  << std::endl;
+		std::cout << "mask: " << (int)dataframe->maskset << std::endl;
+		std::cout << "size: " << (int)dataframe->payload_size << std::endl;
+		
+
+
+		break;
+	}
+
+	close(client_socket);
+	return(NULL);
+}
+
+std::string get_header(const std::string response_key);
+std::string create_response_key(const std::string request_key);
+std::string chomp_str(std::string src);
+std::vector<std::string> split_str(std::string src, char token);
+std::string get_key_from_request_header(std::string request);
+void digest_to_hex(const uint8_t digest[SHA1_DIGEST_SIZE], char *output);
+
+/**************************************************************************************
+Main function
+**************************************************************************************/
+
+int main(int argc, char *argv[], char *env[])
+{
+	int listener_socket = 0;
+	int* client_socket_ptr = NULL;
+
+	struct sockaddr_in serv_addr;
+
+	pthread_t thread_id;
+
+	char buffer[512];
+
+	// set up the listener socket
+	listener_socket = socket(AF_INET, SOCK_STREAM, 0);
+
+	// make sure our data structures are clean
+	memset(&serv_addr, '0', sizeof(serv_addr));
+
+	// set up the serv_addr struct. THe port that we will be connecting on is 9998
+	serv_addr.sin_family = AF_INET;
+	serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+	serv_addr.sin_port = htons(9998);
+
+	int error = bind(listener_socket, (struct sockaddr*)&serv_addr, sizeof(serv_addr));
+
+	if(error != 0)
+	{
+		std::cout << "ERROR?: " << error << std::endl;
+		exit(1);
+	}
+
+	// have a queue of 10 connections
+	listen(listener_socket, 10);
+
+	while(1)
+	{
+		client_socket_ptr = (int*)malloc(sizeof(int));
+		memset(buffer, '0', sizeof(buffer));
+		*client_socket_ptr = accept(listener_socket, (struct sockaddr*)NULL, NULL);
+
+		recv(*client_socket_ptr, buffer, strlen(buffer), 0);
+
+		#ifdef DEBUG
+		std::cout << "RECEIVED: " << std::endl << buffer << std::endl;
+		#endif DEBUG
+
+		std::string sbuffer = std::string(buffer);
+		std::vector<std::string> headers = split_str(sbuffer, '\n');
+		std::vector<std::string>::iterator it;
+
+		// search through the header and look for the header field that contains the key
+		for(it = headers.begin(); it != headers.end(); it++)
+		{
+			std::string header = chomp_str(*it);
+
+			if(header.substr(0, 19) == "Sec-WebSocket-Key: ")
+			{
+				// parse out the request key
+				std::string key = chomp_str(header.substr(19, 100));
+
+				std::string b64key = create_response_key(key);
+				std::string new_header = get_header(b64key);
+
+				#ifdef DEBUG
+				std::cout << new_header << std::endl;
+				#endif DEBUG
+
+				send(*client_socket_ptr, new_header.c_str(), new_header.length(), 0);
+
+				pthread_create(&thread_id, NULL, &worker, client_socket_ptr);
+
+				break;
+			}
+		}
+	}
+
+	close(listener_socket);
+
+	return 0;
+}
+
+/**************************************************************************************
+functions definitions
+**************************************************************************************/
 
 // This function creates the upgrade header for the server to send to a client which 
 // will initiate the websocket.
@@ -220,83 +326,4 @@ void digest_to_hex(const uint8_t digest[SHA1_DIGEST_SIZE], char *output)
             c += 2;
         }
     }
-    // *(c) = '\0';
-}
-
-int main(int argc, char *argv[], char *env[])
-{
-	signal(SIGINT, &sigint_handler);
-
-	int listener_socket = 0, client_socket[8];
-	struct sockaddr_in serv_addr;
-
-	char buffer[512];
-
-	// time_t ticks;
-
-	// set up the listener socket
-	listener_socket = socket(AF_INET, SOCK_STREAM, 0);
-
-	// make sure our data structures are clean
-	memset(&serv_addr, '0', sizeof(serv_addr));
-
-	// set up the serv_addr struct. THe port that we will be connecting on is 9998
-	serv_addr.sin_family = AF_INET;
-	serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-	serv_addr.sin_port = htons(9998);
-
-	int error = bind(listener_socket, (struct sockaddr*)&serv_addr, sizeof(serv_addr));
-
-	if(error != 0)
-	{
-		std::cout << "ERROR?: " << error << std::endl;
-		exit(1);
-	}
-
-	// have a queue of 10 connections
-	listen(listener_socket, 10);
-
-	int socket_count = 0;
-
-	while(1)
-	{
-		memset(buffer, '0', sizeof(buffer));
-		client_socket[socket_count] = accept(listener_socket, (struct sockaddr*)NULL, NULL);
-
-		// ticks = time(NULL);
-		recv(client_socket[socket_count], buffer, strlen(buffer), 0);
-
-		#ifdef DEBUG
-		std::cout << "RECEIVED: " << std::endl << buffer << std::endl;
-		#endif DEBUG
-
-		std::string sbuffer = std::string(buffer);
-		std::vector<std::string> headers = split_str(sbuffer, '\n');
-		std::vector<std::string>::iterator it;
-
-		// search through the header and look for the header field that contains the key
-		for(it = headers.begin(); it != headers.end(); it++)
-		{
-			std::string header = chomp_str(*it);
-
-			if(header.substr(0, 19) == "Sec-WebSocket-Key: ")
-			{
-				// parse out the request key
-				std::string key = chomp_str(header.substr(19, 100));
-
-				std::string b64key = create_response_key(key);
-				std::string new_header = get_header(b64key);
-
-				#ifdef DEBUG
-				std::cout << new_header << std::endl;
-				#endif DEBUG
-
-				send(client_socket[socket_count], new_header.c_str(), new_header.length(), 0);
-
-				break;
-			}
-		}
-	}
-
-	return 0;
 }

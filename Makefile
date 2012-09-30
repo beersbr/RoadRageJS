@@ -1,7 +1,3 @@
-
-# This is the static library for the b64 decoder/encoder
-LIB_LIBB64=libb64/src/libb64.a
-
 # This is here because the creator of libb64 puts the buffer size in the make file.
 BUFFERSIZE=16777216
 FLAGS = -DBUFFERSIZE=$(BUFFERSIZE)

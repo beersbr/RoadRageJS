@@ -106,6 +106,7 @@ std::string get_header(const std::string response_key)
 	websock_resp += "Sec-WebSocket-Origin: http://localhost\r\n";
 	websock_resp += "Sec-WebSocket-Location: ws://localhost:9998/echo\r\n";
 	websock_resp += "Sec-WebSocket-Accept: " + response_key + "\r\n";
+	websock_resp += "\r\n";
 
 	#ifdef DEBUG
 	std::cout << "Websocket Server Response:" << std::endl << websock_resp << std::endl;
@@ -118,7 +119,29 @@ std::string get_header(const std::string response_key)
 // with the original key and then b64'd back to the client.
 std::string create_response_key(const std::string request_key)
 {
-	return "";
+	// initalize the SH1 hasher
+	SHA1_CTX context;
+	uint8_t digest[SHA1_DIGEST_SIZE];
+
+	std::cout << "Recieved Key: " << request_key << std::endl;
+	std::string response_key = request_key + UUID;
+	std::cout << "Response Key: " << response_key << std::endl;
+
+	SHA1_Init(&context);
+	SHA1_Update(&context, (uint8_t*)response_key.c_str(), response_key.length());
+	SHA1_Final(&context, digest);
+
+	response_key = base64_encode(digest, sizeof(digest));
+
+	#ifdef DEBUG
+	char b64[41];
+	digest_to_hex(digest, b64);
+	std::cout << "digest: " << b64 << " -- " << digest << std::endl;
+	#endif DEBUG
+
+	std::cout << "Response Key: " << response_key << std::endl;
+
+	return response_key;
 }
 
 // clears the whitespace from either side of a string
@@ -251,42 +274,24 @@ int main(int argc, char *argv[], char *env[])
 		std::vector<std::string> headers = split_str(sbuffer, '\n');
 		std::vector<std::string>::iterator it;
 
-		// std::cout << "headers: " << std::endl;
+		// search through the header and look for the header field that contains the key
 		for(it = headers.begin(); it != headers.end(); it++)
 		{
 			std::string header = chomp_str(*it);
 
 			if(header.substr(0, 19) == "Sec-WebSocket-Key: ")
 			{
+				// parse out the request key
 				std::string key = chomp_str(header.substr(19, 100));
-				std::cout << "KEY: " << key << std::endl;
 
-				std::string new_key = key+UUID;
-				std::cout << "new key: " << new_key << std::endl;
-
-				uint8_t digest[SHA1_DIGEST_SIZE];
-
-				// This is sha1 specific digest agregate that gets passed to each of the sha1 functions. see sha1.c
-				SHA1_CTX context;
-				SHA1_Init(&context);
-				SHA1_Update(&context, (uint8_t*)new_key.c_str(), new_key.length());
-				SHA1_Final(&context, digest);
-
-				std::string b64string = base64_encode(digest, sizeof(digest));
+				std::string b64key = create_response_key(key);
+				std::string new_header = get_header(b64key);
 
 				#ifdef DEBUG
-				char b64[41];
-				digest_to_hex(digest, b64);
-				std::cout << "digest: " << b64 << " -- " << digest << std::endl;
+				std::cout << new_header << std::endl;
 				#endif DEBUG
 
-				std::cout << "return key: " << b64string << std::endl;
-
-				// send the new key
-				std::string new_header = get_header(b64string);
-				std::cout << new_header << std::endl;
-
-				send(client_socket[socket_count], new_header.c_str(), new_header.length());
+				send(client_socket[socket_count], new_header.c_str(), new_header.length(), 0);
 
 				break;
 			}

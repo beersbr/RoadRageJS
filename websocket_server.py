@@ -20,7 +20,7 @@ def create_accept_string(key):
 	hsh = s.digest()
 	hsh = hsh.strip()
 	encoded_value = b64encode(hsh)
-	print encoded_value
+	print "ENCODED VAL: ", encoded_value
 	return encoded_value
 
 def get_header(new_key):

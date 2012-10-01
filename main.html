@@ -29,37 +29,6 @@ div canvas{
 
 <script type="text/javascript">
 
-
-if ("WebSocket" in window)
-{
-	console.log("WebSocket is supported by your Browser!");
-	// Let us open a web socket
-	var ws = new WebSocket("ws://localhost:9998/echo");
-	ws.onopen = function()
-	{
-		// Web Socket is connected, send data using send()
-		ws.send("Hello, world!");
-			console.log("Message is sent...");
-		};
-
-		ws.onmessage = function (evt) 
-		{ 
-			var received_msg = evt.data;
-			console.log("Message is received...");
-		};
-
-		ws.onclose = function()
-		{ 
-			// websocket is closed.
-			console.log("Connection is closed..."); 
-		};
-	}
-else
-{
-	// The browser doesn't support WebSocket
-	console.log("WebSocket NOT supported by your Browser!");
-}
-
 Game = {
 	lastTime: 0.0,
 	elapsedTime: 0.0
@@ -422,7 +391,29 @@ window.onload = function(){
 	Game.ball = new Ball({x: 40, y: 60, w: 10, h: 10, vel: vel_vector });
 
 	// start the animation loop
-	loop();
+	// loop();
+
+	// Let us open a web socket
+	var ws = new WebSocket("ws://localhost:9998/echo");
+	ws.onopen = function()
+	{
+	// Web Socket is connected, send data using send()
+		ws.send("This is so crazy right!?");
+		console.log("Message is sent...");
+	};
+
+	ws.onmessage = function (evt) 
+	{ 
+		var received_msg = evt.data;
+		console.log("Message is received...");
+	};
+
+	ws.onclose = function()
+	{ 
+		// websocket is closed.
+		console.log("Connection is closed..."); 
+	};
+
 }
 </script>
 </head>

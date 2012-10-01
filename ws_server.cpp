@@ -43,28 +43,25 @@
 const std::string UUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
 
 // the frames can have multiple sizes. But we will only be sending data of 126 bytes or less... for now.
+// keep in mind the bits come in backwards with the lowest bit last.
 struct frame
 {
 	// byte 1
-	uint8_t fin  : 1;
-	uint8_t rsv1 : 1;
-	uint8_t rsv2 : 1;
-	uint8_t rsv3 : 1;
-	uint8_t opcode : 4;
-
+	unsigned char opcode : 4;
+	unsigned char rsv3 : 1;
+	unsigned char rsv2 : 1;
+	unsigned char rsv1 : 1;
+	unsigned char fin  : 1;
+	
 	// byte 2
-	uint8_t maskset : 1;
-	uint8_t payload_size : 7;
-
-	// byte 3 -- byte 3 can be used to represent the size of the data being passed if the payload size is >= 126
-	// For this application I am going to assume that all the data being passed back and forth is less than 126 in size.
-	// If that turns out to not be the case then I can change it later.
+	unsigned char payload_size : 7;
+	unsigned char maskset : 1;
 
 	// instead of having a size byte we will have the masking bytes.
-	uint8_t mask[NONULL(4)];
+	unsigned char mask[NONULL(4)];
 
 	// the payload as its max size for this server
-	uint8_t data[NONULL(126)];
+	unsigned char data[NONULL(126)];
 };
 
 // This function is called after the server has exchanged keys
@@ -80,24 +77,35 @@ static void* worker(void *arg)
 	char buffer[2048];
 	int recv_size = 0;
 
-	struct frame* dataframe = (struct frame*)malloc(sizeof(struct frame));
+	struct frame* dataframe = (struct frame*)malloc(sizeof(struct frame) );
 
 	while(1)
 	{
 		memset(buffer, '\0', 2048);
 		recv_size = recv(client_socket, buffer, 2048, 0);
-		std::cout << "recv'd: " << buffer << std::endl;
 
-		memcpy((void*)dataframe, buffer, 136);
-		std::cout << "fin : " << (int)dataframe->fin     << std::endl;
+		memcpy((void*)dataframe, buffer, sizeof(struct frame));
+		std::cout << "fin : " << (unsigned int)dataframe->fin     << std::endl;
 		std::cout << "rsv1: " << (int)dataframe->rsv1    << std::endl;
 		std::cout << "rsv2: " << (int)dataframe->rsv2    << std::endl;
 		std::cout << "rsv3: " << (int)dataframe->rsv3    << std::endl;
 		std::cout << "opco: " << (int)dataframe->opcode  << std::endl;
-		std::cout << "mask: " << (int)dataframe->maskset << std::endl;
-		std::cout << "size: " << (int)dataframe->payload_size << std::endl;
-		
 
+		std::cout << "mask: " << (unsigned int)dataframe->maskset << std::endl;
+		std::cout << "size: " << (unsigned short)dataframe->payload_size << std::endl;
+
+		std::cout << "mas0: " << (int)dataframe->mask[0] << std::endl;
+		std::cout << "mas1: " << (int)dataframe->mask[1] << std::endl;
+		std::cout << "mas2: " << (int)dataframe->mask[2] << std::endl;
+		std::cout << "mas3: " << (int)dataframe->mask[3] << std::endl;
+
+		std::cout << "data: " << (char*)(dataframe->data) << std::endl;
+
+		for(int i = 0; i < (int)dataframe->payload_size; i++)
+		{
+			std::cout << (char)((unsigned char)dataframe->data[i] ^ (unsigned char)dataframe->mask[(i+3)%4]);
+		}
+		std::cout << std::endl;
 
 		break;
 	}

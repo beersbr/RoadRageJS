@@ -99,13 +99,16 @@ static void* worker(void *arg)
 		std::cout << "mas2: " << (int)dataframe->mask[2] << std::endl;
 		std::cout << "mas3: " << (int)dataframe->mask[3] << std::endl;
 
-		std::cout << "data: " << (char*)(dataframe->data) << std::endl;
+		// std::cout << "data: " << (char*)(dataframe->data) << std::endl;
 
+		std::cout << "Message: ";
+
+		// unmask the payload data as per the spec
 		for(int i = 0; i < (int)dataframe->payload_size; i++)
 		{
 			std::cout << (char)((unsigned char)dataframe->data[i] ^ (unsigned char)dataframe->mask[(i+3)%4]);
 		}
-		std::cout << std::endl;
+		std::cout << std::endl << std::endl;
 
 		break;
 	}

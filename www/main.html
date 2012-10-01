@@ -1,15 +1,404 @@
 <!doctype html>
 <html>
 <head>
-	<title>Web Socket Test</title>
-</head>
+<title>Web Socket Test</title>
+<!-- <meta name="viewport" content="width=device-width" /> -->
+<meta name="viewport" content="width=device-width" />
+<meta name="viewport" content="initial-scale = 1.0" />
+<meta name="viewport" content="maximum-scale=1.0" />
+<meta name="viewport" content="user-scalable=no" />
+
+<style type="text/css">
+body{
+	padding: 0;
+	margin: 0;
+	overflow-x: hidden;
+}
+
+div canvas{
+	/*width: 240px;*/
+	/*height: 360px;*/
+	width: 320px;
+	height: 480px;
+	background-color: black;
+}
+</style>
+
+<script type="text/javascript" src="utility.js"></script>
+<script type="text/javascript" src="input.js"></script>
+
 <script type="text/javascript">
 
-var ws = new WebSocket("ws://localhost:9998/echo");
+Game = {
+	lastTime: 0.0,
+	elapsedTime: 0.0
+}
 
-ws.onopen = function()
+requestAnimFrame = (function() {
+  return window.requestAnimationFrame ||
+     window.webkitRequestAnimationFrame ||
+     window.mozRequestAnimationFrame ||
+     window.oRequestAnimationFrame ||
+     window.msRequestAnimationFrame ||
+     function(/* function FrameRequestCallback */ callback, /* DOMElement Element */ element) {
+       window.setTimeout(callback, 1000/60);
+     };
+})();
+
+
+// Any function should be able to be assumed that it is non-destructive unless
+// it is made clear by the function name and comments otherwise.
+
+function Point(args)
 {
-	ws.send("Hello, world!");
+	if(args == undefined)
+	{
+		args = {};
+	}
+
+	this.x = args.x || 1;
+	this.y = args.y || 0;
+}
+
+/* Vector
+	A Vector() is a Point() with vector calculations. It inherets from Point().
+*/
+function Vector(args)
+{
+	if(args == undefined)
+	{
+		args = {};
+	}
+
+	// inheret from Point
+	Utility.InheretFrom(this, Point, args);
+
+	this.Magnitude = function()
+	{
+		return Math.sqrt(this.x*this.x + this.y*this.y);
+	}
+
+	// Normalize or get the unit vector for this vector
+	this.Normalize = function()
+	{
+		var magnitude = this.Magnitude(),
+			nx = this.x / magnitude,
+			ny = this.y / magnitude;
+
+
+		return ( new Vector({x: nx, y: ny}) );
+	}
+
+	// This is the destructive version of the normalize method
+	this.NormalizeSelf = function()
+	{
+		var magnitude = this.Magnitude(),
+			nx = this.x / magnitude,
+			ny = this.y / magnitude;
+
+		this.x = nx;
+		this.y = ny;
+
+		return this;
+	}
+}
+
+// returns the 
+function DotProduct(vec1, vec2)
+{
+	var dot = (vec1.x*vec2.x + vec1.y*vec2.y);
+	return dot;
+}
+
+/* Line
+	A Line() is composed of 2 Point() objects.
+*/
+function Line(args)
+{
+	if(args == undefined)
+	{
+		args = {};
+	}
+
+	this.p1 = args.p1 || new Point();
+	this.p2 = args.p2 || new Point();
+
+	// The normalize functions produce a normalized vector perpendicular to the line
+	// starting from the left or right
+	this.NormalizeLeft = function()
+	{
+		var nx = -(this.p2.y - this.p1.y),
+			ny = (this.p2.x - this.p1.x),
+			vector = new Vector({x: nx, y: ny});
+
+		vector = vector.NormalizeSelf();
+
+		return ( vector );
+	}
+
+	this.NormalizeRight = function()
+	{
+		var nx = (this.p2.y - this.p1.y),
+			ny = -(this.p2.x - this.p1.x),
+			vector = new Vector({x: nx, y: ny});
+
+		vector = vector.NormalizeSelf();
+
+		return ( vector );
+	}
+
+	this.Normalize = function(side)
+	{
+		if(side == undefined)
+		{
+			side = "left";
+		}
+
+		if(side == "left")
+		{
+			return this.NormalizeLeft(); 
+		}
+		else if(side == "right")
+		{
+			return this.NormalizeRight();
+		}
+		else
+		{
+			return null;
+		}
+	}
+
+	// Gives the line as a vector starting from p1 or p2 meaning that the 
+	// vector could be positive or negative.
+	this.ToVectorP1 = function()
+	{
+		var vec = new Vector({x: this.p1.x, y: this.p1.y });
+		return vec;
+	}
+
+	this.ToVectorP2 = function()
+	{
+		var vec = new Vector({x: this.p2.x, y: this.p2.y });
+		return vec;
+	}
+
+	this.ToVectorArray = function()
+	{
+		return ( [this.ToVectorP1(), this.ToVectorP2()] );
+	}
+
+}
+
+function Entity(args){
+	if(args == undefined)
+	{
+		args = {};
+	}
+
+	var _x = args.x || 0;
+	var _y = args.y || 0;
+
+	this.position = new Point( {x: _x, y: _y} );
+	this.width = args.w || 0;
+	this.height = args.h || 0;
+
+	// returns a point representing the center of the Entity
+	this.Center = function()
+	{
+		var cx = this.position.x + (this.width/2);
+		var	cy = this.position.y + (this.height/2);
+		var	cp = new Point( {x: cx, y:  cy } );
+
+		return cp;
+	}
+
+	this.Update = function(args)
+	{
+		return true;
+	}
+
+	this.Draw = function(renderContext)
+	{
+		return true;
+	}
+}
+
+function Paddle(args)
+{
+	if(args == undefined)
+	{
+		args = {};
+	}
+
+	Utility.InheretFrom(this, Entity, args);
+}
+
+function Ball(args)
+{
+	if(args == undefined)
+	{
+		args = {};
+	}
+
+	Utility.InheretFrom(this, Entity, args);
+
+	this.velocity = args.vel || new Vector({x: 0.0, y: 0.0 });
+
+	this.angle = args.angle || 0.0;
+
+	this.Update = function(args)
+	{
+		var time = 0.0 || args.time;
+		var time_step = time/1000;
+
+		var mouse_handler = args.mouse;
+
+		var dx = args.mouse.x - this.position.x;
+		var dy = args.mouse.y - this.position.y;
+
+		var my = (this.velocity.y * 10) * time_step;
+		var mx = (this.velocity.x * 10) * time_step;
+
+		this.position.x = this.position.x + mx;
+		this.position.y = this.position.y + my;
+
+		// this.position.x = Math.floor(this.position.x);
+		// this.position.y = Math.floor(this.position.y);
+
+		return true;
+	}
+
+	this.Draw = function(renderContext)
+	{
+		var fastx = Math.floor(this.position.x),
+			fasty = Math.floor(this.position.y);
+
+		renderContext.save();
+
+			var center = this.Center();
+			renderContext.strokeStyle = "rgb(200, 0, 200)";
+			renderContext.beginPath();
+				renderContext.moveTo(center.x, center.y);
+				renderContext.lineTo(center.x+(this.velocity.x*30), center.y+(this.velocity.y*30));
+			renderContext.closePath();
+			renderContext.stroke();
+
+			renderContext.fillStyle = "rgb(70, 70, 180)";
+			renderContext.fillRect(fastx, fasty, this.width, this.height);
+
+		renderContext.restore();
+
+		return true;
+	}
+}
+
+function Particle(args)
+{
+	if(args == undefined)
+	{
+		args = {};
+	}
+
+	Utility.InheretFrom(this, Entity, args);
+
+	this.ttl = args.ttl || 1; // in seconds
+	this.currentLife = 0; // this is in milliseconds
+
+	this.friction = 0.95;
+	this.gravity = 0;
+	this.angle = args.angle; // in radians
+}
+
+function loop(){
+	var nowTime = +(new Date());
+	Game.elapsedTime = nowTime - Game.lastTime;
+	Game.lastTime = nowTime;
+
+	// console.log(Game.elapsedTime);
+
+	Game.context.fillRect(0, 0, 320, 480);
+
+	Game.ball.Update({time: Game.elapsedTime, mouse: Game.mouse });
+	Game.ball.Draw(Game.context);
+	// Game.context.stroke();
+
+	requestAnimFrame(loop);
+}
+
+/*
+	Touch Event Stuff
+
+	This is the stuff for the touc events
+
+	TODO
+*/
+// function touchStart(evt)
+// {
+// 	console.log("touch Start");
+// }
+
+// function touchEnd(evt)
+// {
+// 	console.log("touch End");
+// }
+
+// function touchCancel(evt)
+// {
+// 	console.log("touch Cancel");
+// }
+
+// function touchLeave(evt)
+// {
+// 	console.log("touch Leave");
+// }
+
+// function touchMove(evt)
+// {
+// 	console.log("touch Move");
+// }
+
+window.onload = function(){
+	console.log("Document Loaded: "+ (+new Date()) );
+
+	var Canvas = document.getElementById("game-canvas"),
+		Context = Canvas.getContext("2d");
+
+	Context.fillStyle = "rgb(0, 0, 0)";
+	Context.fillRect(0, 0, 240, 100);
+
+	// Canvas.addEventListener("touchstart", touchStart, false);
+	// Canvas.addEventListener("touchstart", touchEnd, false);
+	// Canvas.addEventListener("touchstart", touchCancel, false);
+	// Canvas.addEventListener("touchstart", touchLeave, false);
+	// Canvas.addEventListener("touchstart", touchMove, false);
+
+	Game.context = Context;
+
+	Game.mouse = new MouseHandler(Canvas);
+	Game.keyboard = new KeyboardHandler();
+
+	Game.lastTime = +(new Date());
+
+	var angle = Math.random() * 360;
+	var vx = Math.cos(angle*(Math.PI/180));
+	var vy = Math.sin(angle*(Math.PI/180));
+
+	var vel_vector = new Vector({
+		x: vx,
+		y: vy
+	});
+
+	Game.ball = new Ball({x: 40, y: 60, w: 10, h: 10, vel: vel_vector });
+
+	// start the animation loop
+	// loop();
+
+	// Let us open a web socket
+	var ws = new WebSocket("ws://localhost:9998/echo");
+	ws.onopen = function()
+	{
+	// Web Socket is connected, send data using send()
+		ws.send("This is so crazy right!?");
 		console.log("Message is sent...");
 	};
 
@@ -21,11 +410,18 @@ ws.onopen = function()
 
 	ws.onclose = function()
 	{ 
+		// websocket is closed.
 		console.log("Connection is closed..."); 
 	};
+
 }
 </script>
+</head>
 <body>
-
+	<div>
+		<canvas id="game-canvas" width="320px" height="480px">
+			Your Browser might not support the canvas element. :(
+		</canvas>
+	</div>
 </body>
 </html>

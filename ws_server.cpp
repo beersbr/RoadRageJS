@@ -6,7 +6,7 @@
 #include "base64.h"
 #include "sha1.h"
 
-
+// Standard includes
 #include <iostream>
 #include <iomanip>
 #include <cstdlib>

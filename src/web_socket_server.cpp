@@ -25,7 +25,6 @@ WebSocketServer::WebSocketServer(int portno)
 
 WebSocketServer::~WebSocketServer()
 {
-	
 }
 
 int WebSocketServer::Init()

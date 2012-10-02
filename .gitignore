@@ -1,2 +1,5 @@
 ./ws_server
 *.o
+ws_server
+
+web_socket_server

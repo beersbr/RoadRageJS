@@ -1,3 +1,6 @@
+#ifndef WEB_SOCKET_SERVER_HEADER
+#define WEB_SOCKET_SERVER_HEADER
+
 // This is the for the sha1 of the key
 #include "base64.h"
 #include "sha1.h"
@@ -74,5 +77,24 @@ public:
 	WebSocketServer(int portno);
 	~WebSocketServer();
 
-	static int InitRequest();
+	int Init();
+	int Listen(int queue_size);
+	int GetClientSocket();
+
+	int GetLastError();
+
+private:
+
+	void* _listen(void* args);
+
+	struct sockaddr_in serv_addr;
+
+	int *client_socket;
+	int listener_socket;
+	int listener_portno;
+
+	int errnum;
+
 };
+
+#endif

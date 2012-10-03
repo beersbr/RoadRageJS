@@ -95,7 +95,7 @@ function KeyboardHandler()
 		return false;
 	}
 
-	this.keyIs = function(letter)
+	this.keyIsDown = function(letter)
 	{
 		if(this.keyStates[keyHash[letter]]) return true;
 		return false;

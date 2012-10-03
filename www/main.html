@@ -186,7 +186,6 @@ function Line(args)
 	{
 		return ( [this.ToVectorP1(), this.ToVectorP2()] );
 	}
-
 }
 
 function Entity(args){
@@ -231,6 +230,57 @@ function Paddle(args)
 	}
 
 	Utility.InheretFrom(this, Entity, args);
+}
+
+
+/* Car
+	Car() is the child class that will be used for the player interaction
+*/
+function Car(args)
+{
+	if(args == undefined)
+	{
+		args = {};
+	}
+
+	Utility.InheretFrom(this, Entity, args);
+
+	this.direction = 0.0 || args.direction; // direction in degrees
+
+	this.Update = function(args)
+	{
+		// args = (args == undefined) ? {} : args;
+		if(args == undefined)
+		{
+			args = {};
+		}
+
+		var keyboard = args.keyboard;
+		var mouse = args.mouse;
+
+		if(keyboard.keyIsDown('a'))
+		{
+
+		}
+		if(keyboard.keyIsDown('s'))
+		{
+
+		}
+		if(keyboard.keyIsDown('d'))
+		{
+			
+		}
+		if(keyboard.keyIsDown('w'))
+		{
+			
+		}
+
+	}
+
+	this.Draw = function(renderContext)
+	{
+
+	}
 }
 
 function Ball(args)
@@ -376,6 +426,7 @@ window.onload = function(){
 
 	Game.mouse = new MouseHandler(Canvas);
 	Game.keyboard = new KeyboardHandler();
+	Game.entities = [];
 
 	Game.lastTime = +(new Date());
 

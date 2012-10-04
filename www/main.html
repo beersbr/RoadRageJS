@@ -261,20 +261,20 @@ function Car(args)
 
 		if(keyboard.keyIsDown('a'))
 		{
-			this.direction -= 3.5;
+			this.direction -= 3.9;
 		}
 		if(keyboard.keyIsDown('d'))
 		{
-			this.direction += 3.5;	
+			this.direction += 3.9;
 		}
 
 		if(keyboard.keyIsDown('w'))
 		{
-			this.acceleration += 0.80;
+			this.acceleration += 0.30;
 		}
 		if(keyboard.keyIsDown('s'))
 		{
-			this.acceleration -= 0.80;
+			this.acceleration -= 0.30;
 		}
 
 		// convert degrees to radians...
@@ -283,7 +283,7 @@ function Car(args)
 		var ax = Math.cos(rads);
 		var ay = Math.sin(rads);
 
-		this.acceleration *= 0.93;
+		this.acceleration *= 0.97;
 
 		this.position.x += (ax * this.acceleration);
 		this.position.y += (ay * this.acceleration);
@@ -292,10 +292,10 @@ function Car(args)
 	this.Draw = function(renderContext)
 	{
 		renderContext.save();
-			renderContext.fillStyle = "rgb(128, 128, 255)";
+			renderContext.fillStyle = "rgb(128, 255, 128)";
 			renderContext.fillRect(this.position.x, this.position.y, this.width, this.height);
 
-
+			// this will draw the vector moving out from the car shwing the direction.
 			renderContext.save();
 				renderContext.strokeStyle = "rgb(255, 0, 255)";
 				renderContext.beginPath();
@@ -306,7 +306,7 @@ function Car(args)
 					var ax = Math.cos(rads);
 					var ay = Math.sin(rads);
 
-					renderContext.lineTo(this.Center().x + ax * 20, this.Center().y + ay * 20);
+					renderContext.lineTo(this.Center().x + ax * (this.acceleration+1*10), this.Center().y + ay * (this.acceleration+1*10));
 				renderContext.closePath();
 				renderContext.stroke();
 

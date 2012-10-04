@@ -245,7 +245,8 @@ function Car(args)
 
 	Utility.InheretFrom(this, Entity, args);
 
-	this.direction = 0.0 || args.direction; // direction in degrees
+	this.direction = args.direction || 0.0; // direction in degrees
+	this.acceleration = args.acceleration || 0.0;
 
 	this.Update = function(args)
 	{
@@ -260,26 +261,58 @@ function Car(args)
 
 		if(keyboard.keyIsDown('a'))
 		{
-
-		}
-		if(keyboard.keyIsDown('s'))
-		{
-
+			this.direction -= 3.5;
 		}
 		if(keyboard.keyIsDown('d'))
 		{
-			
-		}
-		if(keyboard.keyIsDown('w'))
-		{
-			
+			this.direction += 3.5;	
 		}
 
+		if(keyboard.keyIsDown('w'))
+		{
+			this.acceleration += 0.80;
+		}
+		if(keyboard.keyIsDown('s'))
+		{
+			this.acceleration -= 0.80;
+		}
+
+		// convert degrees to radians...
+		var rads = this.direction * (Math.PI/180.0);
+
+		var ax = Math.cos(rads);
+		var ay = Math.sin(rads);
+
+		this.acceleration *= 0.93;
+
+		this.position.x += (ax * this.acceleration);
+		this.position.y += (ay * this.acceleration);
 	}
 
 	this.Draw = function(renderContext)
 	{
+		renderContext.save();
+			renderContext.fillStyle = "rgb(128, 128, 255)";
+			renderContext.fillRect(this.position.x, this.position.y, this.width, this.height);
 
+
+			renderContext.save();
+				renderContext.strokeStyle = "rgb(255, 0, 255)";
+				renderContext.beginPath();
+					renderContext.moveTo(this.Center().x, this.Center().y);
+
+					// get the new angle
+					var rads = this.direction * (Math.PI/180.0);
+					var ax = Math.cos(rads);
+					var ay = Math.sin(rads);
+
+					renderContext.lineTo(this.Center().x + ax * 20, this.Center().y + ay * 20);
+				renderContext.closePath();
+				renderContext.stroke();
+
+			renderContext.restore();
+
+		renderContext.restore();
 	}
 }
 
@@ -368,7 +401,7 @@ function loop(){
 
 	Game.context.fillRect(0, 0, 320, 480);
 
-	Game.ball.Update({time: Game.elapsedTime, mouse: Game.mouse });
+	Game.ball.Update({time: Game.elapsedTime, mouse: Game.mouse, keyboard: Game.keyboard });
 	Game.ball.Draw(Game.context);
 	// Game.context.stroke();
 
@@ -439,10 +472,11 @@ window.onload = function(){
 		y: vy
 	});
 
-	Game.ball = new Ball({x: 40, y: 60, w: 10, h: 10, vel: vel_vector });
+	// Game.ball = new Ball({x: 40, y: 60, w: 10, h: 10, vel: vel_vector });
+	Game.ball = new Car({x: 10, y: 10, w: 10, h: 10});
 
 	// start the animation loop
-	// loop();
+	loop();
 
 	// This is the websocket testing stuff :D
 	var ws = new WebSocket("ws://localhost:9998/echo");

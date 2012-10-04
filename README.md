@@ -34,7 +34,17 @@ The server was first played around with in python as a POC. I have rewritten it 
 
 ##### TODO
 
-Lots to do :D
+* Start formalizing the game objects and how the game will play.
+    * The Car object has had some good work done. Though it doesnt have any collision mechanics.
+    * The Screen should follow the player.
+
+* Game networking should have a clear rule set defined in an object perhaps? Or maybe we just document the instructions and use JS blobs for data transfer.
+
+* Start working on menus that are easy for the player to understand and follow.
+
+* Start working on visual and audible assets.
+    * Each action should have an audible compenent as well as a visual component.
+    * Visual style should be consistent throughout the game.
 
 #### Sources
 

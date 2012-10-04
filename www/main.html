@@ -259,6 +259,7 @@ function Car(args)
 		var keyboard = args.keyboard;
 		var mouse = args.mouse;
 
+		// turn left and right by changed the direction
 		if(keyboard.keyIsDown('a'))
 		{
 			this.direction -= 3.9;
@@ -268,6 +269,7 @@ function Car(args)
 			this.direction += 3.9;
 		}
 
+		// change the acceleration with effects the movement vector
 		if(keyboard.keyIsDown('w'))
 		{
 			this.acceleration += 0.30;
@@ -293,7 +295,7 @@ function Car(args)
 	{
 		renderContext.save();
 			renderContext.fillStyle = "rgb(128, 255, 128)";
-			renderContext.fillRect(this.position.x, this.position.y, this.width, this.height);
+			renderContext.fillRect(Math.floor(this.position.x), Math.floor(this.position.y), this.width, this.height);
 
 			// this will draw the vector moving out from the car shwing the direction.
 			renderContext.save();

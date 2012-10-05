@@ -18,8 +18,8 @@ body{
 div canvas{
 	/*width: 240px;*/
 	/*height: 360px;*/
-	width: 320px;
-	height: 480px;
+	width: 800px;
+	height: 600px;
 	background-color: black;
 }
 </style>
@@ -232,6 +232,30 @@ function Paddle(args)
 	Utility.InheretFrom(this, Entity, args);
 }
 
+function ViewPort(args)
+{
+	if(args == undefined)
+	{
+		args = {};
+	}
+
+	this.background_image = args.bgimage || null;
+	this.width = args.w || 800;
+	this.height = args.h || 600;
+
+	this.sx = args.x || 0;
+	this.xy = args.y || 0;
+
+	this.DrawViewport = function(renderContext, x, y)
+	{
+		if(this.background_image != null)
+		{
+			renderContext.drawImage(this.background_image, x, y, this.width, this.height, 0, 0, this.width, this.height);
+			return true;
+		}
+		return false;
+	}
+}
 
 /* Car
 	Car() is the child class that will be used for the player interaction
@@ -285,7 +309,7 @@ function Car(args)
 		var ax = Math.cos(rads);
 		var ay = Math.sin(rads);
 
-		this.acceleration *= 0.97;
+		this.acceleration *= 0.95;
 
 		this.position.x += (ax * this.acceleration);
 		this.position.y += (ay * this.acceleration);
@@ -400,8 +424,8 @@ function loop(){
 	Game.lastTime = nowTime;
 
 	// console.log(Game.elapsedTime);
-
-	Game.context.fillRect(0, 0, 320, 480);
+	// Game.context.fillRect(0, 0, 800, 600);
+	Game.viewport.DrawViewport(Game.context, 300, 300);
 
 	Game.ball.Update({time: Game.elapsedTime, mouse: Game.mouse, keyboard: Game.keyboard });
 	Game.ball.Draw(Game.context);
@@ -457,6 +481,15 @@ window.onload = function(){
 	// Canvas.addEventListener("touchstart", touchLeave, false);
 	// Canvas.addEventListener("touchstart", touchMove, false);
 
+	Game.background_image = new Image();
+	Game.background_image.src = "images/SpaceArt_2560-1600.jpeg";
+
+	Game.background_image.onload = function(evt){
+		console.log("Loaded Background Image");
+	}
+
+	Game.viewport = new ViewPort({bgimage: Game.background_image, x: 880, y: 880, w: 800, h: 600});
+
 	Game.context = Context;
 
 	Game.mouse = new MouseHandler(Canvas);
@@ -506,7 +539,7 @@ window.onload = function(){
 </head>
 <body>
 	<div>
-		<canvas id="game-canvas" width="320px" height="480px">
+		<canvas id="game-canvas" width="800px" height="600px">
 			Your Browser might not support the canvas element. :(
 		</canvas>
 	</div>

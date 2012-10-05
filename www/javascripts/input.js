@@ -32,7 +32,7 @@ function MouseHandler(el){
 
 		this.mouseDown.x = event.offsetX;
 		this.mouseDown.y = event.offsetY;
-		console.log("mousedown");
+		// console.log("mousedown");
 	}
 
 	this.MouseMove = function(e)

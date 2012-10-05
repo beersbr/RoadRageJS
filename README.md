@@ -30,7 +30,7 @@ This is the dataframe diagram directly from the RFC 6455:
 
 ##### Compile the server
 
-The server was first played around with in python as a POC. I have rewritten it in C as C better suites the needs of what I am trying accomplish. to compile you just need to type 'make'
+The server was first played around with in python as a POC. I have rewritten it in C as C better suites the needs of what I am trying accomplish. To compile you just need to type 'make'.
 
 ##### TODO
 

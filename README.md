@@ -34,6 +34,8 @@ The server was first played around with in python as a POC. I have rewritten it 
 
 ##### TODO
 
+* Make the viewport its own object meaning that it either accepts an object to follow or methods are exposed to keep all the logic, currently in the loop, to the viewport object itself.
+
 * Start formalizing the game objects and how the game will play.
     * The Car object has had some good work done. Though it doesnt have any collision mechanics.
     * The Screen should follow the player.

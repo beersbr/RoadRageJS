@@ -222,16 +222,6 @@ function Entity(args){
 	}
 }
 
-function Paddle(args)
-{
-	if(args == undefined)
-	{
-		args = {};
-	}
-
-	Utility.InheretFrom(this, Entity, args);
-}
-
 function ViewPort(args)
 {
 	if(args == undefined)
@@ -244,17 +234,36 @@ function ViewPort(args)
 	this.height = args.h || 600;
 
 	this.sx = args.x || 0;
-	this.xy = args.y || 0;
+	this.sy = args.y || 0;
 
 	this.DrawViewport = function(renderContext, x, y)
 	{
-		if(this.background_image != null)
+		if(x != undefined)
 		{
-			renderContext.drawImage(this.background_image, x, y, this.width, this.height, 0, 0, this.width, this.height);
+			this.sx = x;	
+		}
+		if(y != undefined)
+		{
+			this.sy = y;	
+		}
+
+		Math.floor(this.sx);
+		Math.floor(this.sy);
+
+		if(this.sx < 0) this.sx = 0;
+		if(this.sx > (this.background_image.width - this.width)) this.sx = (this.background_image.width - this.width);
+
+		if(this.sy < 0) this.sy = 0;
+		if(this.sy > (this.background_image.height - this.height)) this.sy = (this.background_image.height - this.height);
+
+		if(this.background_image != null)
+		{	
+			renderContext.drawImage(this.background_image, this.sx, this.sy, this.width, this.height, 0, 0, this.width, this.height);
 			return true;
 		}
 		return false;
 	}
+
 }
 
 /* Car
@@ -271,6 +280,9 @@ function Car(args)
 
 	this.direction = args.direction || 0.0; // direction in degrees
 	this.acceleration = args.acceleration || 0.0;
+	this.friction = args.friction || 0.95;
+
+	this.velocity = args.velocity || new Point({x: 0, y: 0});
 
 	this.Update = function(args)
 	{
@@ -309,10 +321,12 @@ function Car(args)
 		var ax = Math.cos(rads);
 		var ay = Math.sin(rads);
 
-		this.acceleration *= 0.95;
+		this.acceleration *= this.friction;
+		this.velocity.x = (ax * this.acceleration);
+		this.velocity.y = (ay * this.acceleration);
 
-		this.position.x += (ax * this.acceleration);
-		this.position.y += (ay * this.acceleration);
+		this.position.x += this.velocity.x;
+		this.position.y += this.velocity.y;
 	}
 
 	this.Draw = function(renderContext)
@@ -425,7 +439,26 @@ function loop(){
 
 	// console.log(Game.elapsedTime);
 	// Game.context.fillRect(0, 0, 800, 600);
-	Game.viewport.DrawViewport(Game.context, 300, 300);
+
+	if(Game.ball.velocity.x < 0 && Game.ball.position.x < 200)
+	{
+		if(Game.viewport.sx > 0)
+		{
+			Game.viewport.sx += Game.ball.velocity.x;
+			Game.ball.position.x -= Game.ball.velocity.x;
+		}
+	}
+	if(Game.ball.velocity.x > 0 && Game.ball.position.x > 600)
+	{
+		if((Game.viewport.sx+Game.viewport.width) < Game.viewport.background_image.width)
+		{
+			Game.viewport.sx += Game.ball.velocity.x;
+			Game.ball.position.x -= Game.ball.velocity.x;
+		}
+	}
+
+	// Game.viewport.DrawViewport(Game.context, Game.ball.position.x-400, Game.ball.position.y-300);
+	Game.viewport.DrawViewport(Game.context);
 
 	Game.ball.Update({time: Game.elapsedTime, mouse: Game.mouse, keyboard: Game.keyboard });
 	Game.ball.Draw(Game.context);
@@ -488,7 +521,7 @@ window.onload = function(){
 		console.log("Loaded Background Image");
 	}
 
-	Game.viewport = new ViewPort({bgimage: Game.background_image, x: 880, y: 880, w: 800, h: 600});
+	Game.viewport = new ViewPort({bgimage: Game.background_image, x: 0, y: 0, w: 800, h: 600});
 
 	Game.context = Context;
 

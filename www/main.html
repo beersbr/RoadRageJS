@@ -457,6 +457,24 @@ function loop(){
 		}
 	}
 
+	if(Game.ball.velocity.y > 0 && Game.ball.position.y > 400)
+	{
+		if((Game.viewport.sy+Game.viewport.height) < Game.viewport.background_image.height)
+		{
+			Game.viewport.sy += Game.ball.velocity.y;
+			Game.ball.position.y -= Game.ball.velocity.y;
+		}
+	}
+	if(Game.ball.velocity.y < 0 && Game.ball.position.y < 200)
+	{
+		if(Game.viewport.sy > 0)
+		{
+			Game.viewport.sy += Game.ball.velocity.y;
+			Game.ball.position.y -= Game.ball.velocity.y;
+		}
+	}
+
+
 	// Game.viewport.DrawViewport(Game.context, Game.ball.position.x-400, Game.ball.position.y-300);
 	Game.viewport.DrawViewport(Game.context);
 
@@ -515,7 +533,7 @@ window.onload = function(){
 	// Canvas.addEventListener("touchstart", touchMove, false);
 
 	Game.background_image = new Image();
-	Game.background_image.src = "images/SpaceArt_2560-1600.jpeg";
+	Game.background_image.src = "images/SpaceArt_HUGE2.jpeg";
 
 	Game.background_image.onload = function(evt){
 		console.log("Loaded Background Image");

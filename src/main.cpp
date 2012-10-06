@@ -8,6 +8,11 @@
 #include <map>
 #include <algorithm>
 
+class Player
+{
+
+};
+
 int main(int argc, char *argv[], char *env[])
 {
 	WebSocketServer *server = new WebSocketServer();

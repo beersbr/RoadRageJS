@@ -1,5 +1,8 @@
 #include "web_socket_server.hpp"
 
+#include "list.hpp"
+#include "entity.hpp"
+
 #include <iostream>
 #include <cstdlib>
 
@@ -7,11 +10,6 @@
 #include <list>
 #include <map>
 #include <algorithm>
-
-class Player
-{
-
-};
 
 int main(int argc, char *argv[], char *env[])
 {

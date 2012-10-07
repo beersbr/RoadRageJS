@@ -79,7 +79,7 @@ public:
 
 	int Init();
 	int Listen(int queue_size);
-	int GetClientSocket();
+	int GetClientSocket(void* (*func)(void*));
 
 	int GetLastError();
 

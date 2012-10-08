@@ -10,8 +10,8 @@ FLAGS += -lpthread
 # For showing all the warnings
 FLAGS += -Wall
 
-web_socket_server: main.o web_socket_server.o list.o
-	g++ -o web_socket_server main.o web_socket_server.o sha1.o base64.o list.o
+web_socket_server: main.o web_socket_server.o list.o helpers.o
+	g++ -o web_socket_server main.o web_socket_server.o sha1.o base64.o list.o helpers.o
 
 main.o: $(SRC_DIR)main.cpp
 	g++ -c $(SRC_DIR)main.cpp
@@ -21,6 +21,9 @@ web_socket_server.o: $(SRC_DIR)web_socket_server.cpp $(SRC_DIR)web_socket_server
 
 list.o: $(SRC_DIR)list.hpp $(SRC_DIR)list.cpp
 	g++ -c $(SRC_DIR)list.cpp
+
+helpers.o: $(SRC_DIR)helpers.hpp $(SRC_DIR)helpers.cpp 
+	g++ -c $(SRC_DIR)helpers.cpp
 
 # This is the first iteration of the server. It is not longer going to be used for the game but can still
 # be built and used for testing. However, some of the rules for this build will still be used.

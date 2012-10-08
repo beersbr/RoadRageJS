@@ -69,6 +69,41 @@ int WebSocketServer::Listen(int queue_size)
 	close(listener_socket);
 }
 
+std::string WebSocketServer::createHeader(const std::string response_key)
+{
+	std::string websock_resp;
+	websock_resp = "HTTP/1.1 101 Switching Protocols\r\n";
+	websock_resp += "Upgrade: WebSocket\r\n";
+	websock_resp += "Connection: Upgrade\r\n";
+	websock_resp += "Sec-WebSocket-Origin: http://localhost\r\n";
+	websock_resp += "Sec-WebSocket-Location: ws://localhost:9998/echo\r\n";
+	websock_resp += "Sec-WebSocket-Accept: " + response_key + "\r\n";
+	websock_resp += "\r\n";
+
+	return websock_resp;
+}
+
+std::string createResponseKey(const std::string request_key)
+{
+	// initalize the SH1 hasher
+	SHA1_CTX context;
+	uint8_t digest[SHA1_DIGEST_SIZE];
+
+	// std::cout << "Recieved Key: " << request_key << std::endl;
+	std::string response_key = request_key + UUID;
+	// std::cout << "Response Key: " << response_key << std::endl;
+
+	SHA1_Init(&context);
+	SHA1_Update(&context, (uint8_t*)response_key.c_str(), response_key.length());
+	SHA1_Final(&context, digest);
+
+	response_key = base64_encode(digest, sizeof(digest));
+
+	// std::cout << "Response Key: " << response_key << std::endl;
+
+	return response_key;
+}
+
 int WebSocketServer::GetLastError()
 {
 	std::cout << "Last Socket Error: " << this->errnum << std::endl;

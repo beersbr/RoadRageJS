@@ -87,6 +87,9 @@ public:
 
 private:
 
+	std::string createHeader(const std::string response_key);
+	std::string createResponseKey(const std::string request_key);
+
 	struct sockaddr_in serv_addr;
 
 	int *client_socket;

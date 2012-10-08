@@ -32,6 +32,8 @@
 #include <time.h>
 #include <signal.h>
 
+#include "helpers.hpp"
+
 #define ARRAYSIZE(size) (size-1)
 
 #define READBUFFER 512
@@ -72,6 +74,8 @@ private:
 
 };
 
+void SigHandler(int signal);
+
 class WebSocketServer
 {
 public:
@@ -85,8 +89,11 @@ public:
 
 	int GetLastError();
 
+	static int server_running;
+
 private:
 
+	std::string getRequestKey(const std::string request_header);
 	std::string createHeader(const std::string response_key);
 	std::string createResponseKey(const std::string request_key);
 
@@ -97,8 +104,6 @@ private:
 	int listener_portno;
 
 	int errnum;
-
-	int server_running;
 
 	char buffer[READBUFFER];
 };

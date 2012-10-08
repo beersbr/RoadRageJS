@@ -1,5 +1,7 @@
 #include "web_socket_server.hpp"
 
+int WebSocketServer::server_running = false;
+
 WebSocketServer::WebSocketServer()
 {
 	this->errnum = 0;
@@ -12,8 +14,6 @@ WebSocketServer::WebSocketServer()
 
 	// zero out the sockaddr_in struct
 	memset((void*)&serv_addr, '0', sizeof(serv_addr));
-
-	server_running = false;
 }
 
 WebSocketServer::WebSocketServer(int portno)
@@ -31,6 +31,8 @@ WebSocketServer::~WebSocketServer()
 
 int WebSocketServer::Init()
 {
+	signal(SIGINT, SigHandler);
+
 	// set up the listener
 	listener_socket = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -38,16 +40,24 @@ int WebSocketServer::Init()
 	serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
 	serv_addr.sin_port = htons(listener_portno);
 
-	errno = bind(listener_socket, (struct sockaddr*)&serv_addr, sizeof(serv_addr));
+	errnum = bind(listener_socket, (struct sockaddr*)&serv_addr, sizeof(serv_addr));
+
+	// TODO: replace error checking code with the fuction GetLastError()
+	if(errnum < 0)
+	{
+		std::cout << "ERROR in bind()" << std::endl;
+		exit(1);
+	}
+
 }
 
 int WebSocketServer::Listen(int queue_size)
 {
-	server_running = true;
+	WebSocketServer::server_running = true;
 
 	listen(listener_socket, queue_size);
 
-	while(server_running)
+	while(WebSocketServer::server_running)
 	{
 		client_socket = (int*)malloc(sizeof(int));
 		(*client_socket) = accept(listener_socket, (struct sockaddr*)NULL, NULL);
@@ -57,7 +67,18 @@ int WebSocketServer::Listen(int queue_size)
 		recv(*client_socket, buffer, strlen(buffer), 0);
 
 		std::string sbuffer = std::string(buffer);
-		std::vector<std::string> headers;
+
+		std::string key = getRequestKey(buffer);
+		std::string b64_key = createResponseKey(key);
+		std::string response_header = createHeader(b64_key);
+
+		send(*client_socket, response_header.c_str(), response_header.length(), 0);
+		// std::cout << "RESPONSE\r\n" << response_header << std::endl;
+
+		memset(buffer, '0', sizeof(buffer));
+		recv(*client_socket, buffer, strlen(buffer), 0);
+
+		std::cout << buffer << std::endl;
 
 		// TODO: Get the header
 		// TODO: Get the key
@@ -66,7 +87,33 @@ int WebSocketServer::Listen(int queue_size)
 		// TODO: Start the new thread with new good connection
 	}
 
+	close(*client_socket);
 	close(listener_socket);
+}
+
+std::string WebSocketServer::getRequestKey(const std::string request_header)
+{
+	std::vector<std::string> headers = split(request_header, '\n');
+	std::vector<std::string>::iterator it;
+
+	std::string key_option = "Sec-WebSocket-Key: ";
+	std::string current_header = "";
+
+	for(it = headers.begin(); it != headers.end(); it++)
+	{
+		current_header = (*it);
+		current_header = chomp(current_header);
+
+		if(current_header.substr(0, 19) == key_option)
+		{
+			// Found the key!
+			std::string key = current_header.substr(19, 100);
+			key = chomp(key);
+			return key;
+		}
+	}
+
+	return (std::string(""));
 }
 
 std::string WebSocketServer::createHeader(const std::string response_key)
@@ -83,7 +130,7 @@ std::string WebSocketServer::createHeader(const std::string response_key)
 	return websock_resp;
 }
 
-std::string createResponseKey(const std::string request_key)
+std::string WebSocketServer::createResponseKey(const std::string request_key)
 {
 	// initalize the SH1 hasher
 	SHA1_CTX context;
@@ -106,6 +153,21 @@ std::string createResponseKey(const std::string request_key)
 
 int WebSocketServer::GetLastError()
 {
-	std::cout << "Last Socket Error: " << this->errnum << std::endl;
-	return (this->errnum);
+	// if(errnum != 0)
+	// {
+	// 	std::cout << "Last Socket Error: " << this->errnum << std::endl;
+	// 	return (this->errnum);
+	// }
+}
+
+void SigHandler(int sig)
+{
+	switch(sig)
+	{
+		case SIGINT:
+			std::cout << "exiting..." << std::endl;
+			WebSocketServer::server_running = false;
+	}
+
+	return;
 }

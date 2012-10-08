@@ -16,7 +16,7 @@ web_socket_server: main.o web_socket_server.o list.o helpers.o
 main.o: $(SRC_DIR)main.cpp
 	g++ -c $(SRC_DIR)main.cpp
 
-web_socket_server.o: $(SRC_DIR)web_socket_server.cpp $(SRC_DIR)web_socket_server.hpp sha1.o base64.o
+web_socket_server.o: $(SRC_DIR)web_socket_server.cpp $(SRC_DIR)web_socket_server.hpp sha1.o base64.o helpers.o
 	g++ -c $(SRC_DIR)web_socket_server.cpp
 
 list.o: $(SRC_DIR)list.hpp $(SRC_DIR)list.cpp

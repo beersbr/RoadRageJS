@@ -519,6 +519,27 @@ function loop(){
 // 	console.log("touch Move");
 // }
 
+	var ws = new WebSocket("ws://localhost:9998/echo");
+	ws.onopen = function()
+	{
+		console.log("CONNECTION OPENEND");
+	// Web Socket is connected, send data using send()
+		ws.send("This is so crazy right!?");
+		console.log("Message is sent...");
+	};
+
+	ws.onmessage = function (evt) 
+	{ 
+		var received_msg = evt.data;
+		console.log("Message is received...");
+	};
+
+	ws.onclose = function()
+	{ 
+		// websocket is closed.
+		console.log("Connection is closed..."); 
+	};
+
 window.onload = function(){
 	console.log("Document Loaded: "+ (+new Date()) );
 
@@ -564,28 +585,10 @@ window.onload = function(){
 	Game.ball = new Car({x: 10, y: 10, w: 10, h: 10});
 
 	// start the animation loop
-	loop();
+	// loop();
 
 	// This is the websocket testing stuff :D
-	var ws = new WebSocket("ws://localhost:9998/echo");
-	ws.onopen = function()
-	{
-	// Web Socket is connected, send data using send()
-		ws.send("This is so crazy right!?");
-		console.log("Message is sent...");
-	};
 
-	ws.onmessage = function (evt) 
-	{ 
-		var received_msg = evt.data;
-		console.log("Message is received...");
-	};
-
-	ws.onclose = function()
-	{ 
-		// websocket is closed.
-		console.log("Connection is closed..."); 
-	};
 
 }
 </script>

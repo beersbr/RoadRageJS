@@ -12,6 +12,8 @@ WebSocketServer::WebSocketServer()
 
 	// zero out the sockaddr_in struct
 	memset((void*)&serv_addr, '0', sizeof(serv_addr));
+
+	server_running = false;
 }
 
 WebSocketServer::WebSocketServer(int portno)
@@ -41,15 +43,30 @@ int WebSocketServer::Init()
 
 int WebSocketServer::Listen(int queue_size)
 {
-	// spin off the listener thread
-}
-
-void* WebSocketServer::_listen(void *args)
-{
-	int queue_size = *((int*)args);
+	server_running = true;
 
 	listen(listener_socket, queue_size);
-	std::cout << "Listener Thread (" << listener_portno << "): " << pthread_self() << std::endl;
+
+	while(server_running)
+	{
+		client_socket = (int*)malloc(sizeof(int));
+		(*client_socket) = accept(listener_socket, (struct sockaddr*)NULL, NULL);
+
+		memset(buffer, '0', sizeof(buffer));
+
+		recv(*client_socket, buffer, strlen(buffer), 0);
+
+		std::string sbuffer = std::string(buffer);
+		std::vector<std::string> headers;
+
+		// TODO: Get the header
+		// TODO: Get the key
+		// TODO: create the response key
+		// TODO: Send the response header
+		// TODO: Start the new thread with new good connection
+	}
+
+	close(listener_socket);
 }
 
 int WebSocketServer::GetLastError()

@@ -34,6 +34,8 @@ The server was first played around with in python as a POC. I have rewritten it 
 
 ##### TODO
 
+* Make the server a singleton OR create an input thread to listen for keyboard input as a way to interact with the server while it is running. Perhaps simple interrupts will do.
+
 * Make the viewport its own object meaning that it either accepts an object to follow or methods are exposed to keep all the logic, currently in the loop, to the viewport object itself.
 
 * Start formalizing the game objects and how the game will play.

@@ -16,6 +16,7 @@ int main(int argc, char *argv[], char *env[])
 	WebSocketServer *server = new WebSocketServer();
 
 	server->Init();
+	server->Listen();
 
 	return 0;
 }

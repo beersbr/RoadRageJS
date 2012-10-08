@@ -34,6 +34,8 @@
 
 #define ARRAYSIZE(size) (size-1)
 
+#define READBUFFER 512
+
 // the magic UUID for the server websocket response
 const std::string UUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
 
@@ -78,14 +80,12 @@ public:
 	~WebSocketServer();
 
 	int Init();
-	int Listen(int queue_size);
+	int Listen(int queue_size = 10);
 	int GetClientSocket(void* (*func)(void*));
 
 	int GetLastError();
 
 private:
-
-	void* _listen(void* args);
 
 	struct sockaddr_in serv_addr;
 
@@ -95,6 +95,9 @@ private:
 
 	int errnum;
 
+	int server_running;
+
+	char buffer[READBUFFER];
 };
 
 #endif

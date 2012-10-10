@@ -50,6 +50,8 @@ The server was first played around with in python as a POC. I have rewritten it 
     * Each action should have an audible compenent as well as a visual component.
     * Visual style should be consistent throughout the game.
 
+* this is an example
+
 #### Sources
 
 ##### Base 64 Encode

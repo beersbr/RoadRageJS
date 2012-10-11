@@ -26,7 +26,27 @@ This is the dataframe diagram directly from the RFC 6455:
     |                     Payload Data continued ...                |
     +---------------------------------------------------------------+
 
-#### Getting Started
+##### The communication process
+
+The game will have a communication process. Packets of data that will reside in the payload portion of the dataframe will look something like this:
+
+     0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7
+    +---------------+---------------+---------------+---------------+
+    |             OPCODE            |             Params            |
+    +---------------+---------------+---------------+---------------+
+    |                         Params Cont...                        |
+    +---------------+---------------+---------------+---------------+
+
+* This is not exact as there is a bit more info we need to send. But it will mostly likely be sent in a flat manner.
+
+
+We will have 6 bytes for data and 2 bytes for a unique function.
+
+When a user starts a game the client will attempt a connection to the server. If no connection is made then 1 player mode starts. However, if a connection is made the server will create a player object for the new player and will return an id which will be used to identify that player from the client. instruction will only be accepted from clients that send an id with a returned hash from the original ip.
+
+The server will run on ticks. Something around 100 ticks per second. Meaning that each client will get updated 100 times per second, or the server will attempt to update the client 100 times. Whenever the server sends instructions out it will be with a tick number and a time stamp. Both of those will help the client draw what it needs to draw where it needs to draw it. The server will attempt to keep track of cheating by giving a score of how likely an action is to have really taken place based on the rules of the game.
+
+#### Stuff To Get Working
 
 ##### Compile the server
 

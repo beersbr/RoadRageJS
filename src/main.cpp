@@ -13,9 +13,7 @@
 
 int main(int argc, char *argv[], char *env[])
 {
-	// WebSocketServer *server = new WebSocketServer();
 	WebSocketServer* server = WebSocketServer::Instance();
-
 	server->Init();
 	server->Listen();
 

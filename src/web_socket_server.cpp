@@ -99,10 +99,10 @@ int WebSocketServer::Listen(int queue_size)
 
 }
 
-int WebSocketServer::SendSocketBuffer(char *buffer)
+int WebSocketServer::WriteSocketBuffer(char *buffer)
 {
 	if(buffer == NULL) return -1;
-
+	
 	
 
 	return 0;

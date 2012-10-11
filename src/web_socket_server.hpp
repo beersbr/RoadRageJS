@@ -109,6 +109,7 @@ public:
 	int GetClientSocket(void* (*func)(void*));
 
 	char* ReadSocketBuffer(char *dataFrameBuffer, int sz_buf);
+	int SendSocketBuffer(char* buffer);
 
 	int GetLastError();
 

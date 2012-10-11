@@ -99,6 +99,15 @@ int WebSocketServer::Listen(int queue_size)
 
 }
 
+int WebSocketServer::SendSocketBuffer(char *buffer)
+{
+	if(buffer == NULL) return -1;
+
+	
+
+	return 0;
+}
+
 char* WebSocketServer::ReadSocketBuffer(char* dataFrameBuffer, int sz_buf)
 {
 	if(!dataFrameBuffer) return NULL;

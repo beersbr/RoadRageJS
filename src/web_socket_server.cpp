@@ -1,6 +1,13 @@
 #include "web_socket_server.hpp"
 
 int WebSocketServer::server_running = false;
+WebSocketServer* WebSocketServer::instance = NULL;
+
+WebSocketServer* WebSocketServer::Instance()
+{
+	if(instance == NULL) instance = new WebSocketServer();
+	return instance;
+}
 
 WebSocketServer::WebSocketServer()
 {
@@ -16,14 +23,14 @@ WebSocketServer::WebSocketServer()
 	memset((void*)&serv_addr, '0', sizeof(serv_addr));
 }
 
-WebSocketServer::WebSocketServer(int portno)
-{
-	client_socket = NULL;
-	listener_socket = -1;
-	listener_portno = portno;
+// WebSocketServer::WebSocketServer(int portno)
+// {
+// 	client_socket = NULL;
+// 	listener_socket = -1;
+// 	listener_portno = portno;
 
-	memset((void*)&serv_addr, '0', sizeof(serv_addr));
-}
+// 	memset((void*)&serv_addr, '0', sizeof(serv_addr));
+// }
 
 WebSocketServer::~WebSocketServer()
 {
@@ -76,19 +83,100 @@ int WebSocketServer::Listen(int queue_size)
 		// std::cout << "RESPONSE\r\n" << response_header << std::endl;
 
 		memset(buffer, '0', sizeof(buffer));
-		recv(*client_socket, buffer, strlen(buffer), 0);
+		int read = recv(*client_socket, buffer, strlen(buffer), 0);
 
-		std::cout << buffer << std::endl;
+		// std::cout << buffer << std::endl;
+		ReadSocketBuffer(buffer, read);
 
-		// TODO: Get the header
-		// TODO: Get the key
-		// TODO: create the response key
 		// TODO: Send the response header
 		// TODO: Start the new thread with new good connection
 	}
 
-	close(*client_socket);
-	close(listener_socket);
+	std::cout << "Closing the sockets..." << std::endl;
+
+	std::cout << "Closing client: " << (close(*client_socket)) << std::endl;
+	std::cout << "Closing server: " << (close(listener_socket)) << std::endl;
+
+}
+
+char* WebSocketServer::ReadSocketBuffer(char* dataFrameBuffer, int sz_buf)
+{
+	if(!dataFrameBuffer) return NULL;
+	if(sz_buf < 6) return NULL; // the size the header plus mask with NO data
+
+	struct WSFrameHeader* header = (WSFrameHeader*)malloc(sizeof(struct WSFrameHeader));
+	memcpy(header, dataFrameBuffer, 2);
+
+	// std::cout << "OpCode: " << (unsigned int)header->opcode       << std::endl;
+	// std::cout << "mask ?: " << (unsigned int)header->maskset      << std::endl;
+	// std::cout << "size  : " << (unsigned int)header->payload_size << std::endl;
+
+	long long data_size = 0;
+	char mask[4];
+	memset(mask, (char)0, 4);
+	int offset = 0;
+	char* dsize_cast = NULL;
+
+	// TODO: perhaps make some aggregate unions for the offsets so we
+	// can keep one item instead of the switch statment.
+
+	// TODO: possibly some unsafe casting here. Perhaps this function needs a 
+	// refactor at some point.
+
+	switch(header->payload_size)
+	{
+		case 126:
+			if(sz_buf < 8) return NULL;
+
+			dsize_cast = (char*)malloc(2);
+
+			memset(dsize_cast, (char)0, 2);
+			memcpy(dsize_cast, (dataFrameBuffer+2), 2);
+
+			data_size = (long long)dsize_cast;
+
+			memcpy(mask, (dataFrameBuffer+4), 4);
+			offset = 8;
+
+			break;
+
+		case 127:
+			if(sz_buf < 14) return NULL;
+
+			dsize_cast = (char*)malloc(8);
+
+			memset(dsize_cast, (char)0, 8);
+			memcpy(dsize_cast, (dataFrameBuffer+2), 8);
+
+			data_size = (long long)dsize_cast;
+
+			memcpy(mask, (dataFrameBuffer+10), 4);
+			offset = 14;
+
+			break;
+
+		default:
+			data_size = header->payload_size;
+			memcpy(mask, (dataFrameBuffer+2), 4);
+			offset = 6;
+
+			break;
+	}
+
+	// TODO: remember to check the sz_buf size here as well so we dont read
+	// past the end of our buffer.
+
+	std::cout << "Found message of bytes: " << data_size << std::endl;
+
+	for(int i = 0; i < data_size; i++)
+	{
+		std::cout << (char)((*(dataFrameBuffer+offset+i)) ^ mask[i%4]);
+	}
+
+	std::cout << std::endl;
+
+
+	return NULL;
 }
 
 std::string WebSocketServer::getRequestKey(const std::string request_header)

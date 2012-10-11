@@ -55,12 +55,36 @@ struct WSFrame
 	unsigned char payload_size : 7;
 	unsigned char maskset : 1;
 
-	// Mask
-	unsigned char mask[ARRAYSIZE(4)];
-
-	// the payload as its max size for this server
-	unsigned char data[ARRAYSIZE(126)];
+	union size_buffer{
+		struct sz_125{
+			unsigned char mask[4];
+			unsigned char data[ARRAYSIZE(126)];
+		};
+		struct sz_126{
+			unsigned char size_126[2];
+			unsigned char mask[4];
+			unsigned char data[ARRAYSIZE(65535)];
+		};
+		struct sz_127{
+			unsigned char size_127[8];
+			unsigned char mask[4];
+			unsigned char data1[ARRAYSIZE(4294967295)];
+			unsigned char data2[ARRAYSIZE(4294967295)];
+		};
+	};
 };
+
+struct WSFrameHeader{
+	unsigned char opcode : 4;
+	unsigned char rsv3 : 1;
+	unsigned char rsv2 : 1;
+	unsigned char rsv1 : 1;
+	unsigned char fin  : 1;
+
+	unsigned char payload_size : 7;
+	unsigned char maskset : 1;
+};
+
 
 // This is the wrapper for the frame.
 class WebSocketFrame
@@ -79,19 +103,24 @@ void SigHandler(int signal);
 class WebSocketServer
 {
 public:
-	WebSocketServer();
-	WebSocketServer(int portno);
-	~WebSocketServer();
 
 	int Init();
 	int Listen(int queue_size = 10);
 	int GetClientSocket(void* (*func)(void*));
 
+	char* ReadSocketBuffer(char *dataFrameBuffer, int sz_buf);
+
 	int GetLastError();
 
-	static int server_running;
+	static int server_running; // TODO: this is getting removed...
+
+	static WebSocketServer* Instance();
+
+	~WebSocketServer();
 
 private:
+
+	WebSocketServer();
 
 	std::string getRequestKey(const std::string request_header);
 	std::string createHeader(const std::string response_key);
@@ -106,6 +135,8 @@ private:
 	int errnum;
 
 	char buffer[READBUFFER];
+
+	static WebSocketServer* instance;
 };
 
 #endif

@@ -26,12 +26,21 @@ div canvas{
 
 <script type="text/javascript" src="javascripts/utility.js"></script>
 <script type="text/javascript" src="javascripts/input.js"></script>
+<script type="text/javascript" src="javascripts/asset_loader.js"></script>
 
 <script type="text/javascript">
 
+GAMESTATE = {
+	LOADING: 0,
+	PAUSED: 1,
+	PLAYING: 2,
+	MENU1: 3
+}
+
 Game = {
 	lastTime: 0.0,
-	elapsedTime: 0.0
+	elapsedTime: 0.0,
+	gameState: 0
 }
 
 requestAnimFrame = (function() {
@@ -434,13 +443,31 @@ function Particle(args)
 	this.angle = args.angle; // in radians
 }
 
-function loop(){
-	var nowTime = +(new Date());
-	Game.elapsedTime = nowTime - Game.lastTime;
-	Game.lastTime = nowTime;
+function loading()
+{
+	if(Game.assetHandler.complete)
+	{
+		Game.gameState = GAMESTATE.PLAYING;
+	}
 
-	// console.log(Game.elapsedTime);
-	// Game.context.fillRect(0, 0, 800, 600);
+	var completed = Game.assetHandler.Load();
+
+	var width = 600 * completed;
+
+	Game.context.fillRect(0, 0, 800, 600);
+	Game.context.save();
+		Game.context.strokeStyle = "rgb(200, 200, 200)";
+		Game.context.strokeRect(100, 290, 600, 20);
+		Game.context.stroke();
+		Game.context.fillStyle = "rgb(100, 128, 200)";
+		Game.context.fillRect(100, 290, width, 20);
+	Game.context.restore();
+
+	// console.log(completed);
+}
+
+function playing()
+{
 
 	if(Game.ball.velocity.x < 0 && Game.ball.position.x < 200)
 	{
@@ -476,13 +503,32 @@ function loop(){
 		}
 	}
 
-
 	// Game.viewport.DrawViewport(Game.context, Game.ball.position.x-400, Game.ball.position.y-300);
 	Game.viewport.DrawViewport(Game.context);
 
 	Game.ball.Update({time: Game.elapsedTime, mouse: Game.mouse, keyboard: Game.keyboard });
 	Game.ball.Draw(Game.context);
 	// Game.context.stroke();
+}
+
+function loop(){
+	var nowTime = +(new Date());
+	Game.elapsedTime = nowTime - Game.lastTime;
+	Game.lastTime = nowTime;
+
+	// console.log(Game.elapsedTime);
+	// Game.context.fillRect(0, 0, 800, 600);
+
+	switch(Game.gameState)
+	{
+		case GAMESTATE.LOADING:
+			loading();
+			break;
+
+		case GAMESTATE.PLAYING:
+			playing();
+			break;
+	}
 
 	requestAnimFrame(loop);
 }
@@ -543,6 +589,23 @@ function loop(){
 window.onload = function(){
 	console.log("Document Loaded: "+ (+new Date()) );
 
+	Game.assetHandler = new AssetHandler();
+	Game.assetHandler.TagAsset("tag1", "images/SpaceArt_HUGE2.jpeg");
+	Game.assetHandler.TagAsset("tag2", "images/SpaceArt_HUGE.jpeg");
+	Game.assetHandler.TagAsset("tag3", "images/SpaceArt_2560-1600.jpeg");
+	Game.assetHandler.TagAsset("tag4", "images/SpaceArt_HUGE2.jpeg");
+	Game.assetHandler.TagAsset("tag5", "http://www.mmoginfo.com/imagenes/foto_asdf.jpg");
+	Game.assetHandler.TagAsset("tag6", "http://upload.wikimedia.org/wikipedia/commons/e/e9/Sombrero_Galaxy_in_infrared_light_(Hubble_Space_Telescope_and_Spitzer_Space_Telescope).jpg");
+
+	Game.assetHandler.TagAsset("tag1", "images/SpaceArt_HUGE2.jpeg");
+	Game.assetHandler.TagAsset("tag2", "images/SpaceArt_HUGE.jpeg");
+	Game.assetHandler.TagAsset("tag3", "images/SpaceArt_2560-1600.jpeg");
+	Game.assetHandler.TagAsset("tag4", "images/SpaceArt_HUGE2.jpeg");
+	Game.assetHandler.TagAsset("tag5", "http://www.mmoginfo.com/imagenes/foto_asdf.jpg");
+	Game.assetHandler.TagAsset("tag6", "http://upload.wikimedia.org/wikipedia/commons/e/e9/Sombrero_Galaxy_in_infrared_light_(Hubble_Space_Telescope_and_Spitzer_Space_Telescope).jpg");
+
+	// Game.assetHandler.Load();
+
 	var Canvas = document.getElementById("game-canvas"),
 		Context = Canvas.getContext("2d");
 
@@ -586,10 +649,6 @@ window.onload = function(){
 
 	// start the animation loop
 	loop();
-
-	// This is the websocket testing stuff :D
-
-
 }
 </script>
 </head>

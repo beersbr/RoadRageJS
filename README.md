@@ -46,13 +46,23 @@ When a user starts a game the client will attempt a connection to the server. If
 
 The server will run on ticks. Something around 100 ticks per second. Meaning that each client will get updated 100 times per second, or the server will attempt to update the client 100 times. Whenever the server sends instructions out it will be with a tick number and a time stamp. Both of those will help the client draw what it needs to draw where it needs to draw it. The server will attempt to keep track of cheating by giving a score of how likely an action is to have really taken place based on the rules of the game.
 
-#### Stuff To Get Working
+#### Stuff To Get it Working
 
 ##### Compile the server
 
 The server was first played around with in python as a POC. I have rewritten it in C as C better suites the needs of what I am trying accomplish. To compile you just need to type 'make'.
 
+#### Design
+
+The game will be somewhat normal with an update and draw during each frame. The frames will be timed so that proper physics steps can be made.
+
+The main loop will switch on gamestate so that different states can be executed without disturbing the rest of the gaame. 
+
+Example: We need a pause state but we dont want to bother executing the rest of the game when we are paused. So pause will needs its own update()/draw() loop. The gamestate can switch up these states and the update() functions in each state can be the boss of switching states if need be.
+
 ##### TODO
+
+* Create a level format to be used throughout the game. This should help with the viewport design as well. Though they may not be directly related they can probably help with design ideas.
 
 * Start creating a wiki and commenting on functions for documentation's sake.
 

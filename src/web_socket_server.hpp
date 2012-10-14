@@ -31,6 +31,7 @@
 #include <sys/types.h>
 #include <time.h>
 #include <signal.h>
+#include <fcntl.h>
 
 #include "helpers.hpp"
 
@@ -109,7 +110,7 @@ public:
 	int GetClientSocket(void* (*func)(void*));
 
 	char* ReadSocketBuffer(char *dataFrameBuffer, int sz_buf);
-	int SendSocketBuffer(char* buffer);
+	char* WriteSocketBuffer(const char* buffer, int* sz_buf);
 
 	int GetLastError();
 

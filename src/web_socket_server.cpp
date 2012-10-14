@@ -47,6 +47,8 @@ int WebSocketServer::Init()
 	serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
 	serv_addr.sin_port = htons(listener_portno);
 
+	// fcntl(listener_socket, F_SETFL, O_NONBLOCK);
+
 	errnum = bind(listener_socket, (struct sockaddr*)&serv_addr, sizeof(serv_addr));
 
 	// TODO: replace error checking code with the fuction GetLastError()
@@ -83,10 +85,17 @@ int WebSocketServer::Listen(int queue_size)
 		// std::cout << "RESPONSE\r\n" << response_header << std::endl;
 
 		memset(buffer, '0', sizeof(buffer));
-		int read = recv(*client_socket, buffer, strlen(buffer), 0);
+		int read_sz = recv(*client_socket, buffer, strlen(buffer), 0);
 
 		// std::cout << buffer << std::endl;
-		ReadSocketBuffer(buffer, read);
+		ReadSocketBuffer(buffer, read_sz);
+
+		int sizeof_buf = 0;
+		char* send_dataframe = WriteSocketBuffer("test string", &sizeof_buf);
+
+		int send_sz = send(*client_socket, send_dataframe, sizeof_buf, 0);
+
+		std::cout << "Sent: " << send_sz << std::endl;
 
 		// TODO: Send the response header
 		// TODO: Start the new thread with new good connection
@@ -99,13 +108,63 @@ int WebSocketServer::Listen(int queue_size)
 
 }
 
-int WebSocketServer::WriteSocketBuffer(char *buffer)
+// This function will need to made to more accurately reflect the RFC spec
+char* WebSocketServer::WriteSocketBuffer(const char *buffer, int* sz_size)
 {
-	if(buffer == NULL) return -1;
-	
-	
+	if(buffer == NULL) return NULL;
 
-	return 0;
+	struct WSFrameHeader* header = (WSFrameHeader*)malloc(sizeof(struct WSFrameHeader));
+
+	header->opcode = 0x01;
+	header->fin = 1;
+	header->maskset = 0;
+
+	long long size = strlen(buffer);
+	char* dataframe_buffer = NULL;
+
+	int offset = 0;
+
+	if(size <= 125)
+	{
+		header->payload_size = size;
+		dataframe_buffer = (char*)malloc(2+size);
+		(*sz_size) = (2+size);
+
+		memcpy(dataframe_buffer, header, sizeof(struct WSFrameHeader));
+		offset += sizeof(struct WSFrameHeader);
+		memcpy(dataframe_buffer+offset, buffer, size);
+
+	}
+	else if(size >= 126)
+	{
+		header->payload_size = 126;
+		dataframe_buffer = (char*)malloc(4+size);
+		(*sz_size) = (4+size);
+		char bufsize[2];
+		memset(bufsize, 0, 2);
+		memcpy(bufsize, &size, 2);
+
+		memcpy(dataframe_buffer, header, sizeof(struct WSFrameHeader));
+		offset += sizeof(struct WSFrameHeader);
+		memcpy(dataframe_buffer+offset, bufsize, 2);
+		offset += 2;
+		memcpy(dataframe_buffer+offset, buffer, size);
+
+
+	}
+	// else if(size >= 65535)
+	// {
+	// 	header->payload_size = 127;
+	// 	dataframe_buffer = (char*)malloc(12+size);
+	// 	char bufsize[6];
+	// 	memset(bufsize, 0, 6);
+	// 	memcpy(bufsize, &size, 6);
+
+	// }
+
+	// print_as_binary(dataframe_buffer, (*sz_size));
+
+	return dataframe_buffer;
 }
 
 char* WebSocketServer::ReadSocketBuffer(char* dataFrameBuffer, int sz_buf)

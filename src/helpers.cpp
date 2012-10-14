@@ -43,3 +43,15 @@ std::vector<std::string > split(std::string src, char token)
 
 	return strings;
 }
+
+int print_as_binary(const char* string, const int sz)
+{
+	for(int i = 0; i < sz; i+=2)
+	{
+		for(int j = 0; j < 16; j++)
+		{
+			std::cout << (int)((string[i] >> j) & 1);
+		}
+		std::cout << std::endl;
+	}
+}

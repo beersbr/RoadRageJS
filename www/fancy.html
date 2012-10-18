@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Fancy</title>
+<style type="text/css">
+	canvas{
+		background-color: black;
+	}
+</style>
+<script type="text/javascript">
+requestAnimFrame = (function() {
+  return window.requestAnimationFrame ||
+     window.webkitRequestAnimationFrame ||
+     window.mozRequestAnimationFrame ||
+     window.oRequestAnimationFrame ||
+     window.msRequestAnimationFrame ||
+     function(/* function FrameRequestCallback */ callback, /* DOMElement Element */ element) {
+       window.setTimeout(callback, 1000/60);
+     };
+})();
+
+GLOBAL = {
+	Context: null
+};
+
+function Square(x, y, tangle)
+{
+	this.x = x;
+	this.y = y;
+	this.angle = tangle;
+	
+	this.draw = function()
+	{
+		var color = parseInt(140 + 115*Math.sin(this.angle));
+
+		GLOBAL.Context.fillStyle = "rgb("+color+","+color+","+color+")";
+		GLOBAL.Context.fillRect(this.x*40, this.y*40, 40, 40);
+	}
+
+	this.update = function()
+	{
+		this.angle += 0.025;
+	}
+}
+
+function loop()
+{
+	for(var i = 0; i < 10; i++)
+	{
+		for(var j = 0; j < 10; j++)
+		{
+			GLOBAL.squares[j][i].draw();
+			GLOBAL.squares[j][i].update();
+		}
+	}
+
+	requestAnimFrame(loop);
+}
+
+window.onload = function()
+{
+	GLOBAL.Angle = 0.00;
+	GLOBAL.Context = document.getElementById("fancy-canvas").getContext("2d");
+
+	GLOBAL.squares = [];
+
+	for(var i = 0; i < 10; i++)
+	{
+		GLOBAL.squares[i] = [];
+
+		for(var j = 0; j < 10; j++)
+		{
+			GLOBAL.squares[i].push(new Square(i, j, i + j));
+		}
+	}
+
+	loop();
+}
+
+</script>
+</head>
+<body>
+	<canvas id="fancy-canvas" width="400" height="400"></canvas>
+</body>
+</html>

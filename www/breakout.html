@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Breakout</title>
+
+<style type="text/css">
+canvas{
+	background-color: black;
+}
+</style>
+
+<script type="text/javascript" src="./javascripts/input.js"></script>
+
+<script type="text/javascript">
+
+requestAnimFrame = (function() {
+  return window.requestAnimationFrame ||
+     window.webkitRequestAnimationFrame ||
+     window.mozRequestAnimationFrame ||
+     window.oRequestAnimationFrame ||
+     window.msRequestAnimationFrame ||
+     function(/* function FrameRequestCallback */ callback, /* DOMElement Element */ element) {
+       window.setTimeout(callback, 1000/60);
+     };
+})();
+
+Game = {
+	elapsed_time = 0.00,
+	context = null,
+	keyboard = null,
+	mouse = null,
+	entities = []
+}
+
+function Paddle(start_x)
+{
+	this.x = start_x;
+	this.y = 
+	this.paddle_width = 50;
+	this.paddle_height = 10;
+
+	this.update = function(time)
+	{
+
+	}
+
+	this.draw = function(context)
+	{
+
+	}
+
+}
+
+function Ball(start_x, start_y, angle, speed)
+{
+	this.speed = speed;
+	this.angle = angle;
+	this.x = start_x;
+	this.y = start_y;
+
+	this.update = function(time)
+	{
+
+	}
+
+	this.draw = function(context)
+	{
+
+	}
+}
+
+function Tile(nx, ny, points)
+{
+	this.x = nx;
+	this.y = ny;
+	this.points = points;
+
+	this.width = 25; // yields 16 tiles
+	this.height = 15;
+
+	this.update = function(time)
+	{
+
+	}
+
+	this.draw = function(context)
+	{
+
+	}
+}
+
+function loop()
+{
+	requestAnimFrame(loop);
+}
+
+function generateLevel(rows)
+{
+	Game.entities = [];
+
+	for(var i = 0; i < rows; i++)
+	{
+		for(var j = 0; j < max)
+		Game.entities.push(
+			new Tile()
+		);
+	}
+}
+
+function setup()
+{
+	Game.context = document.getElementById("breakout-canvas").getContext("2d");
+	Game.keyboard = new KeyboardHandler();
+	Game.running_time = +(new Date());
+	Game.old_time = +(new Date());
+	Game.elapsed_time = Game.old_time = Game.running_time;
+
+}
+
+window.onload = function()
+{
+	setup();
+	loop();
+}
+
+</script>
+
+</head>
+<body>
+<canvas id="breakout-canvas" width="400" height="300"></canvas>
+</body>
+</html>

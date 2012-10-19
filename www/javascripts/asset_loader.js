@@ -1,3 +1,5 @@
+// TODO: make sure this handles audio as well as images implicitly.
+
 function AssetHandler()
 {
 	this.assets_list = [];
@@ -56,6 +58,7 @@ function AssetHandler()
 				this.loaded_assets += 1;
 			});
 
+			// TODO: finish makine sure the object works in it's entirety
 			this.assets_list[i].onerror = function()
 			{
 				console.log("ERROR LOADING IMAGES! ", this.assets_list[i]);

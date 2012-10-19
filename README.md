@@ -2,6 +2,8 @@
 
 #### Notes
 
+A couple files have been added: breakout.html and fancy.html. They are both just small experiments to play around with and practice some simple technics.
+
 Written and tested on OSX Mountain Lion (10.8.2) using Xcode included gcc (gcc version 4.2.1 (Based on Apple Inc. build 5658) (LLVM build 2336.11.00))
 
 This is the dataframe diagram directly from the RFC 6455:

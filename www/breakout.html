@@ -24,48 +24,99 @@ requestAnimFrame = (function() {
      };
 })();
 
+gameStates = {
+	LOADING: 0,
+	PLAYING: 1,
+	PAUSED: 2
+}
+
 Game = {
-	elapsed_time = 0.00,
-	context = null,
-	keyboard = null,
-	mouse = null,
-	entities = []
+	elapsed_time: 0.00,
+	context: null,
+	keyboard: null,
+	mouse: null,
+	entities: [],
+	state: gameStates.LOADING
 }
 
 function Paddle(start_x)
 {
 	this.x = start_x;
-	this.y = 
+	this.y = 280;
 	this.paddle_width = 50;
 	this.paddle_height = 10;
+
+	this.paddle_speed = 150;
 
 	this.update = function(time)
 	{
 
+		var keyboard = Game.keyboard;
+
+		if(keyboard.keyIsDown("a"))
+		{
+			this.x -= this.paddle_speed * time;
+		}
+		if(keyboard.keyIsDown("d"))
+		{
+			this.x += this.paddle_speed * time;
+		}
 	}
 
 	this.draw = function(context)
 	{
-
+		context.save();
+			context.fillStyle = "rgb(200, 50, 50)";
+			context.fillRect(this.x, this.y, this.paddle_width, this.paddle_height);
+		context.restore();
 	}
 
 }
 
 function Ball(start_x, start_y, angle, speed)
 {
+	// get angle as radians
+	angle = angle * (Math.PI/180);
+
 	this.speed = speed;
 	this.angle = angle;
 	this.x = start_x;
 	this.y = start_y;
 
+	this.ax = Math.cos(angle);
+	this.ay = Math.sin(angle);
+
 	this.update = function(time)
 	{
+		this.ax = Math.cos(this.angle);
+		this.ay = Math.sin(this.angle);
 
+		this.ax += speed * time;
+		this.ay += speed * time;
+
+		// check for collision here and take the mirrored angle + a random number 
+		// to keep things interesting.
+
+		for(var e = 0; e < Game.entities.length; e++)
+		{
+			// var ent = Game.entities[i];
+			// if(this.x < other.Min.X || 
+   //              this.Max.Y < other.Min.Y || 
+   //              this.Min.X > other.Max.X || 
+   //              this.Min.Y > other.Max.Y) 
+   //          {
+		}
+
+		this.x += this.ax;
+		this.y += this.ay;
 	}
 
 	this.draw = function(context)
 	{
-
+		context.save();
+			context.fillStyle = "rgb(200, 200, 200)";
+			context.fillArc(this.x, this.y, 8, 0, 2*Math.PI);
+		context.restore();
 	}
 }
 
@@ -78,6 +129,12 @@ function Tile(nx, ny, points)
 	this.width = 25; // yields 16 tiles
 	this.height = 15;
 
+	this.hit = false;
+
+
+
+	this.rgb = "rgb(127, 127, 200)";
+
 	this.update = function(time)
 	{
 
@@ -85,13 +142,56 @@ function Tile(nx, ny, points)
 
 	this.draw = function(context)
 	{
-
+		context.save();
+			context.fillStyle = this.rgb;
+			context.fillRect(this.x, this.y, this.width, this.height);
+			context.strokeStyle = "rgb(40, 40, 80)";
+			context.strokeRect(this.x+1, this.y+1, this.width-2, this.height-2);
+		context.restore();
 	}
 }
 
 function loop()
 {
+	Game.time = +(new Date());
+	Game.elapsed_time = Game.time - Game.old_time
+	Game.old_time = Game.time
+
+	var elapsed_milliseconds = Game.elapsed_time /1000;
+
+	switch(Game.state)
+	{
+		case gameStates.LOADING:
+			loading(elapsed_milliseconds);
+			break;
+
+		case gameStates.PLAYING:
+			runGame(elapsed_milliseconds, Game.context, Game.entities, Game.keyboard);
+			break;
+
+		case gameStates.PAUSED:
+			break;
+	}
+
 	requestAnimFrame(loop);
+}
+
+function loading(etime, context)
+{
+	generateLevel(5);
+	Game.entities.push(new Paddle(100));
+	Game.state = gameStates.PLAYING;
+}
+
+function runGame(etime, context, ents, keyboard)
+{
+	context.fillRect(0, 0, 400, 300);
+
+	for(var i = 0; i < ents.length; i++)
+	{
+		ents[i].update(etime);
+		ents[i].draw(context);
+	}
 }
 
 function generateLevel(rows)
@@ -100,10 +200,15 @@ function generateLevel(rows)
 
 	for(var i = 0; i < rows; i++)
 	{
-		for(var j = 0; j < max)
-		Game.entities.push(
-			new Tile()
-		);
+		for(var j = 0; j < 16; j++)
+		{
+			if(Math.random() * 10 > 5)
+			{
+				Game.entities.push(
+					new Tile(j*25, i*15, 10)
+				);	
+			}
+		}
 	}
 }
 
@@ -111,7 +216,7 @@ function setup()
 {
 	Game.context = document.getElementById("breakout-canvas").getContext("2d");
 	Game.keyboard = new KeyboardHandler();
-	Game.running_time = +(new Date());
+	Game.start_time = +(new Date());
 	Game.old_time = +(new Date());
 	Game.elapsed_time = Game.old_time = Game.running_time;
 

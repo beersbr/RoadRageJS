@@ -27,6 +27,7 @@ div canvas{
 <script type="text/javascript" src="javascripts/utility.js"></script>
 <script type="text/javascript" src="javascripts/input.js"></script>
 <script type="text/javascript" src="javascripts/asset_loader.js"></script>
+<script type="text/javascript" src="javascripts/sprite_handler.js"></script>
 
 <script type="text/javascript">
 
@@ -40,7 +41,8 @@ GAMESTATE = {
 Game = {
 	lastTime: 0.0,
 	elapsedTime: 0.0,
-	gameState: 0
+	gameState: 0,
+	sprite: null
 }
 
 requestAnimFrame = (function() {
@@ -447,6 +449,11 @@ function loading()
 {
 	if(Game.assetHandler.complete)
 	{
+		Game.sprite = new SpriteHandler({image: Game.assetHandler.assets["block"], 
+										 tile_width: 25, 
+										 tile_height: 25,
+										 frame_life: 10 });
+
 		Game.gameState = GAMESTATE.PLAYING;
 	}
 
@@ -530,6 +537,8 @@ function loop(){
 			break;
 	}
 
+	if(Game.sprite != null) Game.sprite.draw(Game.context, 50, 50);
+
 	requestAnimFrame(loop);
 }
 
@@ -596,13 +605,7 @@ window.onload = function(){
 	Game.assetHandler.TagAsset("tag4", "images/SpaceArt_HUGE2.jpeg");
 	Game.assetHandler.TagAsset("tag5", "http://www.mmoginfo.com/imagenes/foto_asdf.jpg");
 	Game.assetHandler.TagAsset("tag6", "http://upload.wikimedia.org/wikipedia/commons/e/e9/Sombrero_Galaxy_in_infrared_light_(Hubble_Space_Telescope_and_Spitzer_Space_Telescope).jpg");
-
-	Game.assetHandler.TagAsset("tag1", "images/SpaceArt_HUGE2.jpeg");
-	Game.assetHandler.TagAsset("tag2", "images/SpaceArt_HUGE.jpeg");
-	Game.assetHandler.TagAsset("tag3", "images/SpaceArt_2560-1600.jpeg");
-	Game.assetHandler.TagAsset("tag4", "images/SpaceArt_HUGE2.jpeg");
-	Game.assetHandler.TagAsset("tag5", "http://www.mmoginfo.com/imagenes/foto_asdf.jpg");
-	Game.assetHandler.TagAsset("tag6", "http://upload.wikimedia.org/wikipedia/commons/e/e9/Sombrero_Galaxy_in_infrared_light_(Hubble_Space_Telescope_and_Spitzer_Space_Telescope).jpg");
+	Game.assetHandler.TagAsset("block", "images/breakoutGreen.png");
 
 	// Game.assetHandler.Load();
 

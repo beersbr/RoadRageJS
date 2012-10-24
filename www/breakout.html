@@ -36,7 +36,28 @@ Game = {
 	keyboard: null,
 	mouse: null,
 	entities: [],
-	state: gameStates.LOADING
+	state: gameStates.LOADING,
+	object_ids: 0, 
+	getId: function(){ return (Game.object_ids++); }
+}
+
+function AABBCollision(x1, y1, w1, h1, x2, y2, w2, h2)
+{
+	if (x1 + w1 < x2)
+		return false;
+	if (x1 > x2 + w2)
+		return false;
+	if (y1 + h1 < y2)
+		return false;
+	if (y1 > y2 + h2)
+		return false;
+
+	return true;
+}
+
+function Deg2Rad(deg)
+{
+	return (deg * (Math.PI/180));
 }
 
 function Paddle(start_x)
@@ -45,6 +66,9 @@ function Paddle(start_x)
 	this.y = 280;
 	this.paddle_width = 50;
 	this.paddle_height = 10;
+
+	this.object_name = "Paddle";
+	this.object_id = Game.getId();
 
 	this.paddle_speed = 150;
 
@@ -61,6 +85,8 @@ function Paddle(start_x)
 		{
 			this.x += this.paddle_speed * time;
 		}
+
+		return true;
 	}
 
 	this.draw = function(context)
@@ -75,16 +101,18 @@ function Paddle(start_x)
 
 function Ball(start_x, start_y, angle, speed)
 {
-	// get angle as radians
-	angle = angle * (Math.PI/180);
-
 	this.speed = speed;
 	this.angle = angle;
 	this.x = start_x;
 	this.y = start_y;
+	this.width = 10;
+	this.height = 10;
 
-	this.ax = Math.cos(angle);
-	this.ay = Math.sin(angle);
+	this.ax = Math.cos(Deg2Rad(angle));
+	this.ay = Math.sin(Deg2Rad(angle));
+
+	this.object_name = "Ball";
+	this.object_id = Game.getId();
 
 	this.update = function(time)
 	{
@@ -99,12 +127,19 @@ function Ball(start_x, start_y, angle, speed)
 
 		for(var e = 0; e < Game.entities.length; e++)
 		{
-			// var ent = Game.entities[i];
-			// if(this.x < other.Min.X || 
-   //              this.Max.Y < other.Min.Y || 
-   //              this.Min.X > other.Max.X || 
-   //              this.Min.Y > other.Max.Y) 
-   //          {
+			var entity = Game.entities[e];
+			if (entity.object_id == this.object_id)	continue;
+			switch(entity.object_name)
+			{
+				case "Tile":
+					if (AABBCollision(this.x, this.y, this.width, this.height, entity.x, entity.y, entity.width, entity.height))
+					{
+						entity.dying = true;
+						// if ()
+					}
+				case "Paddle":
+			}
+
 		}
 
 		this.x += this.ax;
@@ -131,13 +166,19 @@ function Tile(nx, ny, points)
 
 	this.hit = false;
 
-
+	this.object_name = "Tile";
+	this.object_id = Game.getId();
 
 	this.rgb = "rgb(127, 127, 200)";
 
+	this.dying = false;
+
 	this.update = function(time)
 	{
+		if (this.dying)
+			return false;
 
+		return true;
 	}
 
 	this.draw = function(context)
@@ -189,8 +230,13 @@ function runGame(etime, context, ents, keyboard)
 
 	for(var i = 0; i < ents.length; i++)
 	{
-		ents[i].update(etime);
+		var isDead = ents[i].update(etime);
 		ents[i].draw(context);
+
+		if (isDead)
+		{
+			ents.splice(i, 1);
+		}
 	}
 }
 

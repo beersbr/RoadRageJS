@@ -11,13 +11,15 @@
 <script type="text/javascript">
 
 GameStates = {
-	MENU: 0,
+	MENU:    0,
 	PLAYING: 1,
-	PAUSE: 2,
+	PAUSED:  2,
 	LOADING: 10
 }
 
 Game = {};
+
+
 Game.id = 0;
 Game.getId = function()
 {
@@ -52,7 +54,21 @@ function Entity(args){
 
 function loop()
 {
+	switch(Game.state)
+	{
+		case LOADING:
+			Game.loading();
+			break;
 
+		case MENU:
+			break;
+
+		case PLAYING:
+			break;
+
+		case PAUSED:
+			break;
+	}
 
 	requestAnimFrame(loop);
 }

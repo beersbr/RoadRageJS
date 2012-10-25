@@ -10,9 +10,19 @@
 
 <script type="text/javascript">
 
+Game = {};
+Game.id = 0;
+Game.getId = function()
+{
+	return (Game.id++);
+}
+
 function Entity(args){
 
 	args = (args == undefined) ? {} : args;
+
+	this._name = "Entity";
+	this._id = getId();
 
 	this.x = args.x || 0;
 	this.y = args.y || 0;
@@ -33,6 +43,12 @@ function Entity(args){
 	}
 }
 
+// set up the game objects that are needed from the start
+function setup()
+{
+	Game.keyboard = new KeyboardHandler();
+	Game.canvas = document.getElementById("simulation-canvas");
+}
 
 window.onload = function()
 {

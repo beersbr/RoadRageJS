@@ -10,9 +10,33 @@
 
 <script type="text/javascript">
 
+function Entity(args){
+
+	args = (args == undefined) ? {} : args;
+
+	this.x = args.x || 0;
+	this.y = args.y || 0;
+	this.w = args.w || 0;
+	this.h = args.h || 0;
+	
+	this.vx = args.vx || 0.0;
+	this.vy = args.vy || 0.0;
+
+	this.Update = function(args)
+	{
+		return true;
+	}
+
+	this.Draw = function(renderContext)
+	{
+		return true;
+	}
+}
+
+
 window.onload = function()
 {
-	
+
 }	
 
 </script>

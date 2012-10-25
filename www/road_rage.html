@@ -10,6 +10,7 @@
 
 <script type="text/javascript">
 
+
 GameStates = {
 	MENU:    0,
 	PLAYING: 1,
@@ -34,6 +35,7 @@ function Entity(args)
 {
 
 	args = (args == undefined) ? {} : args;
+
 
 	this._name = "Entity";
 	this._id = getId();
@@ -101,6 +103,7 @@ function Tile(args)
 	}
 }
 
+
 function loop()
 {
 	switch(Game.state)
@@ -132,10 +135,82 @@ function setup()
 	return true;
 }
 
-window.onload = function()
+window.onload = function
 {
 	setup();
 }	
+	
+function Player(args) //accepts user input and moves car, calculating speed, sending position to server
+{
+	args = (args == undefined) ? {} : args;
+
+	Utility.InheretFrom(this, Entity, args);
+
+	this._name = "Player";
+	this._id = Game.getId();
+
+	this.w = 50;
+	this.h = 75;
+
+	this.x = args.x || 0;
+	this.y = args.y || 0;
+
+	this.angle = args.angle || 0;
+
+	this.image = args.image || 0;
+
+	this.sprite =  new SpriteHandler({image: this.image, tile_width: this.w, tile_height: this.h});
+
+	
+	this.update = function(time)
+	{
+
+
+		var keyboard = Game.keyboard;
+
+		if(keyboard.keyIsDown("up_arrow"))
+		{
+			this.x -= this.player_speed * time;
+		}
+		if(keyboard.keyIsDown("down_arrow"))
+		{
+			this.x += this.player_speed * time;
+		}
+
+		return true;
+	}
+    ;
+
+	this.draw = function(context)
+	{
+		//use sprite later
+
+		this.sprite.draw(context, this.x, this.y);
+		return true;
+
+		// context.save();
+		// 	context.fillRect(this.x, this.y, this.w, this.h);
+		// context.restore();
+	}
+
+    }
+    ;
+
+
+function Car()	//gets position from server eventually
+	Utility.InheretFrom(this, Entity, args);
+	//instatiate sprite handler
+
+	this.x = args.x || 50
+	this.y = args.y || 75
+;
+
+
+window.onload = function()
+{
+
+}
+
 
 </script>
 

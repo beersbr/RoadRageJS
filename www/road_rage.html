@@ -10,6 +10,13 @@
 
 <script type="text/javascript">
 
+GameStates = {
+	MENU: 0,
+	PLAYING: 1,
+	PAUSE: 2,
+	LOADING: 10
+}
+
 Game = {};
 Game.id = 0;
 Game.getId = function()
@@ -43,16 +50,26 @@ function Entity(args){
 	}
 }
 
+function loop()
+{
+
+
+	requestAnimFrame(loop);
+}
+
 // set up the game objects that are needed from the start
 function setup()
 {
 	Game.keyboard = new KeyboardHandler();
 	Game.canvas = document.getElementById("simulation-canvas");
+	Game.assets = new AssetHandler();
+
+	return true;
 }
 
 window.onload = function()
 {
-
+	setup();
 }	
 
 </script>

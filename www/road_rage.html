@@ -19,6 +19,10 @@ GameStates = {
 
 Game = {};
 
+Game.loading = function()
+{
+	return true;	
+}
 
 Game.id = 0;
 Game.getId = function()
@@ -26,7 +30,8 @@ Game.getId = function()
 	return (Game.id++);
 }
 
-function Entity(args){
+function Entity(args)
+{
 
 	args = (args == undefined) ? {} : args;
 
@@ -49,6 +54,50 @@ function Entity(args){
 	this.Draw = function(renderContext)
 	{
 		return true;
+	}
+}
+
+function Level(args)
+{
+	this.w = args.w || 0;
+	this.h = args.h || 0;
+
+	this.update = function()
+	{
+
+	}
+
+	this.draw = function(render_context)
+	{
+
+	}
+
+	this.load = function(tile_list)
+	{
+
+	}
+}
+
+function Tile(args)
+{
+	this.image = args.image
+	this.x = args.x || 0;
+	this.y = args.y || 0;
+	this.w = args.w || this.image.w;
+	this.h = args.h || this.image.h;
+
+	this.sprite = new SpriteHandler({image: this.image,
+									 tile_width: this.w,
+									 tile_height: this.h
+									});
+
+	// this will determine whether or not we need to continue to keep track of the tile.
+	this.animated = (this.sprite.frame_count > 0) ? true : false;
+
+	this.Draw = function(render_context)
+	{
+		this.sprite.draw(render_context, this.x, this.y);
+		return this.animated;
 	}
 }
 

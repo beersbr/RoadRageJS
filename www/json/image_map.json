@@ -1,0 +1,10 @@
+{
+	"images": {
+		"car": "images/raceCar.png",
+		"road_left": "images/road_left.png",
+		"road_right": "images/road_right.png",
+		"edge_left": "images/edge_left.png",
+		"edge_right": "images/edge_right.png",
+		"blank_road": "images/blank_road"
+	}
+}

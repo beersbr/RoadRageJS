@@ -5,6 +5,20 @@ require 'json'
 @sockets = []
 @players = {}
 
+threads_moved = [];
+
+def socket_cleaner
+	threads_moved.each do |t|
+		if t == true
+			;
+		end
+	end
+	sleep(20)
+end
+
+thread = Thread.new{ socket_cleaner }
+
+
 def create_players_json(not_hash)
 	json_string = '['
 
@@ -35,7 +49,7 @@ EventMachine.run do
   		json_msg = JSON.parse msg
 
 
-  		puts "RECV: #{json_msg["phash"]} => #{json_msg}"
+  		# puts "RECV: #{json_msg["phash"]} => #{json_msg}"
 
   		# update the players list
   		@players[json_msg["phash"]] = json_msg

@@ -272,6 +272,8 @@ function Tile(args)
 		var _x = (at_x == undefined) ? this.x : at_x;
 		var _y = (at_y == undefined) ? this.y : at_y;
 
+        console.log (render_context)
+
 		this.sprite.draw(render_context, _x, _y);
 		return this.animated;
 	}
@@ -308,7 +310,6 @@ function Player(args) //accepts user input and moves car, calculating speed, sen
 	
 	this.update = function(time)
 	{
-
 		var keyboard = Game.keyboard;
 
 		if(keyboard.keyIsDown("w"))
@@ -348,6 +349,30 @@ function Player(args) //accepts user input and moves car, calculating speed, sen
 
 		this.x += this.vx;
 		this.y += this.vy;
+
+        if (this.x < 0)
+        {
+            this.x = 10
+        }
+        if (this.y < 0)
+        {
+            this.y = 10
+        }
+        if (this.x > 745)
+        {
+            this.x = 735
+        }
+        if (this.y > 365)
+        {
+            this.y = 355
+        }
+
+
+
+        //this.x = Math.max(5,this.x)
+        //this.y = Math.max(5, this.y)
+        //this.x = Math.min(740, this.x)
+        //this.y = Math.min(361, this.y)
 
 		// console.log(GWebSocket.socket);
 		if(GWebSocket.socket.readyState == 1)

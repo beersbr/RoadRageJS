@@ -3,6 +3,7 @@
 <head>
 <title>road rage</title>
 <link rel="stylesheet" type="text/css" href="./styles/main.css">
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
 <script type="text/javascript" src="./javascripts/utility.js"></script>
 <script type="text/javascript" src="./javascripts/input.js"></script>
 <script type="text/javascript" src="./javascripts/asset_loader.js"></script>
@@ -10,21 +11,41 @@
 
 <script type="text/javascript">
 
-
-GameStates = {
-	MENU:    0,
-	PLAYING: 1,
-	PAUSED:  2,
-	LOADING: 10
-}
+// init some globals -- on purpose
+(function(){
+	MENU = 0;
+	PLAYING = 1;
+	PAUSED = 2;
+	LOADING = 10;
+})();
 
 Game = {};
 
 Game.width = 800;
 Game.height = 600;
 
+// The initial loading function -- somewhat of a hack
 Game.loading = function()
 {
+	// update
+	if(Game.assets.complete)
+	{
+		Game.gameState = PLAYING;
+	}
+
+	var completed = Game.assets.load();
+	var width = 600 * completed;
+
+	// draw
+	Game.context.fillRect(0, 0, 800, 600);
+	Game.context.save();
+		Game.context.strokeStyle = "rgb(200, 200, 200)";
+		Game.context.strokeRect(100, 290, 600, 20);
+		Game.context.stroke();
+		Game.context.fillStyle = "rgb(100, 128, 200)";
+		Game.context.fillRect(100, 290, width, 20);
+	Game.context.restore();
+
 	return true;	
 }
 
@@ -37,7 +58,6 @@ Game.getId = function()
 function Entity(args)
 {
 	args = (args == undefined) ? {} : args;
-
 
 	this._name = "Entity";
 	this._id = getId();
@@ -63,6 +83,9 @@ function Entity(args)
 
 function Level(args)
 {
+	this._name = "Level";
+	this._id = Game.getId();
+
 	this.w = args.w || 0;
 	this.h = args.h || 0;
 
@@ -91,6 +114,9 @@ function Level(args)
 
 function Tile(args)
 {
+	this._name = "Tile";
+	this._id = Game.getId();
+
 	this.image = args.image
 	this.x = args.x || 0;
 	this.y = args.y || 0;
@@ -127,8 +153,10 @@ function Player(args) //accepts user input and moves car, calculating speed, sen
 	this.x = args.x || 0;
 	this.y = args.y || 0;
 
-	this.angle = args.angle || 0;
+	this.acceleration = 4;
+	this.turn_speed = 2.5;
 
+	this.angle = args.angle || 0;
 	this.image = args.image || 0;
 
 	this.sprite =  new SpriteHandler({image: this.image, tile_width: this.w, tile_height: this.h});
@@ -136,7 +164,6 @@ function Player(args) //accepts user input and moves car, calculating speed, sen
 	
 	this.update = function(time)
 	{
-
 
 		var keyboard = Game.keyboard;
 
@@ -162,6 +189,11 @@ function Player(args) //accepts user input and moves car, calculating speed, sen
 
 function loop()
 {
+	Game.time = +(new Date());
+	Game.elapsed_time = Game.time - Game.old_time
+	Game.old_time = Game.time
+	Game.elapsed_milliseconds = Game.elapsed_time / 1000; 
+
 	switch(Game.state)
 	{
 		case LOADING:
@@ -185,15 +217,43 @@ function loop()
 function setup()
 {
 	Game.keyboard = new KeyboardHandler();
-	Game.canvas = document.getElementById("simulation-canvas");
+	Game.context = document.getElementById("simulation-canvas").getContext("2d");
 	Game.assets = new AssetHandler();
+
+	Game.start_time = +(new Date());
+	Game.old_time = +(new Date());
+	Game.elapsed_time = Game.old_time = Game.running_time;
+
+	var images_object = null;
+
+	// mark the assets in the image_map.json for loading.
+	$.ajax({
+		async: false,
+		url: "json/image_map.json",
+		success: function(ret){
+			images_object = ret;
+		}
+	});
+
+	var images_object_keys = Object.keys(images_object["images"]);
+
+	for(var i = 0; i < images_object_keys.length; i++)
+	{
+		var key = images_object_keys[i];
+		var	path = images_object["images"][key];
+
+		Game.assets.tagAsset(key, path);
+	}
+
+	Game.state = LOADING;
 
 	return true;
 }
 
 window.onload = function()
 {
-
+	setup();
+	loop();
 }
 
 </script>

@@ -11,14 +11,19 @@ function AssetHandler()
 	this.loaded_assets = 0;
 	this.complete = false;
 
-	this.TagAsset = function(tag, filename)
+	this.asset = function(asset_tag)
+	{
+		return (this.assets[asset_tag] || null);
+	}
+
+	this.tagAsset = function(tag, filename)
 	{
 		this.to_load.push([tag, filename]);
 		this.total_assets += 1;
 		return this.total_assets;
 	}
 
-	this.Load = function()
+	this.load = function()
 	{
 		if(this.loading == false)
 		{
@@ -61,8 +66,7 @@ function AssetHandler()
 			// TODO: finish makine sure the object works in it's entirety
 			this.assets_list[i].onerror = function()
 			{
-				console.log("ERROR LOADING IMAGES! ", this.assets_list[i]);
-				alert("asset failed to load.");
+				console.log("ERROR LOADING IMAGES: ", this.src);
 			}
 
 			this.assets_list[i].onabort = function()

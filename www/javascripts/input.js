@@ -108,7 +108,7 @@ function KeyboardHandler()
 
 	this.cleaner = function(key)
 	{
-		console.log("cleaning: "+key);
+		// console.log("cleaning: "+key);
 		this.pressed_keys[key] = false;
 	}
 

@@ -1,20 +1,16 @@
 require 'sinatra'
 
-DocRoot = File.dirname(__FILE__)
-DocRoot = DocRoot+"/../www/styles"
-puts File.expand_path(DocRoot)
+docRoot = File.dirname(__FILE__)
+docRoot = docRoot+"/../www"
+DocRoot = File.absolute_path(docRoot)
+puts DocRoot
+
+puts "Public Root Folder: #{DocRoot}"
 
 set :public_folder, DocRoot
 
-
 get '/' do
-	send_file('road_rage.html')
-	# File.read(File.join('www', 'road_rage.html'))
-	# methodName = params[:splat][0].to_s
-	# params.to_s
-	# if path == 'save'
-	# 	"in save"
-	# end
+	redirect "road_rage.html"
 end
 
 get 'getUser' do
@@ -23,10 +19,6 @@ end
 
 get 'setUser' do
 	params
-end
-
-get '/*' do
-
 end
 
 

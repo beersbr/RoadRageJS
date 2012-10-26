@@ -33,7 +33,6 @@ Game.getId = function()
 
 function Entity(args)
 {
-
 	args = (args == undefined) ? {} : args;
 
 
@@ -101,43 +100,6 @@ function Tile(args)
 		this.sprite.draw(render_context, this.x, this.y);
 		return this.animated;
 	}
-}
-
-
-function loop()
-{
-	switch(Game.state)
-	{
-		case LOADING:
-			Game.loading();
-			break;
-
-		case MENU:
-			break;
-
-		case PLAYING:
-			break;
-
-		case PAUSED:
-			break;
-	}
-
-	requestAnimFrame(loop);
-}
-
-// set up the game objects that are needed from the start
-function setup()
-{
-	Game.keyboard = new KeyboardHandler();
-	Game.canvas = document.getElementById("simulation-canvas");
-	Game.assets = new AssetHandler();
-
-	return true;
-}
-
-window.onload = function
-{
-	setup();
 }	
 	
 function Player(args) //accepts user input and moves car, calculating speed, sending position to server
@@ -192,25 +154,43 @@ function Player(args) //accepts user input and moves car, calculating speed, sen
 		// 	context.fillRect(this.x, this.y, this.w, this.h);
 		// context.restore();
 	}
+}
 
-    }
-    ;
+function loop()
+{
+	switch(Game.state)
+	{
+		case LOADING:
+			Game.loading();
+			break;
 
+		case MENU:
+			break;
 
-function Car()	//gets position from server eventually
-	Utility.InheretFrom(this, Entity, args);
-	//instatiate sprite handler
+		case PLAYING:
+			break;
 
-	this.x = args.x || 50
-	this.y = args.y || 75
-;
+		case PAUSED:
+			break;
+	}
 
+	requestAnimFrame(loop);
+}
+
+// set up the game objects that are needed from the start
+function setup()
+{
+	Game.keyboard = new KeyboardHandler();
+	Game.canvas = document.getElementById("simulation-canvas");
+	Game.assets = new AssetHandler();
+
+	return true;
+}
 
 window.onload = function()
 {
 
 }
-
 
 </script>
 

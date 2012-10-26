@@ -400,6 +400,8 @@ function Car(args)
 	this.image = args.image || null;
 	this.phash = "";
 
+	this.angle = args.angle;	
+
 	this.sprite = new SpriteHandler({ image: this.image, tile_width: this.w, tile_height: this.h })
 
 	this.update = function(time)
@@ -409,8 +411,24 @@ function Car(args)
 
 	this.draw = function(context)
 	{
-		// console.log("x: ", this.x, "y: ", this.y);
-		this.sprite.draw(context, this.x - Game.level.x, this.y - Game.level.y);
+		var draw_x = this.x - Game.level.x;
+		var draw_y = this.y - Game.level.y;		
+
+		if(draw_x > 0 && draw_x < Game.width && draw_y > 0 && draw_y < Game.height)
+		{
+			context.save();
+				context.translate(draw_x, draw_y);
+
+				var rads = this.angle * Math.PI / 180;
+				context.rotate(rads);
+
+				// this.sprite.draw(context, draw_x - this.w/2, draw_y - this.h/2);
+				this.sprite.draw(context, -(this.w/2), -(this.h/2));
+
+				// context.fillStyle = "rgb(255, 0, 255)";
+				// context.fillRect(this.x + this.w/2 - 2, this.y + this.h/2, 2, 2);
+			context.restore();
+		}
 
 		return true;
 	}
@@ -487,12 +505,13 @@ Game.playing = function()
 
 		if(current_car_keys.indexOf(current_car.phash) < 0)
 		{
-			Game.cars_hash[current_car.phash] = new Car({image: Game.assets.asset("raceCar"), x: current_car.x, y: current_car.y });
+			Game.cars_hash[current_car.phash] = new Car({image: Game.assets.asset("raceCar"), x: current_car.x, y: current_car.y, angle: current_car.angle });
 		}
 		else
 		{
 			Game.cars_hash[current_car.phash].x = current_car.x;
 			Game.cars_hash[current_car.phash].y = current_car.y;
+			Game.cars_hash[current_car.phash].angle = current_car.angle;
 			// console.log(Game.cars_hash[current_car.phash].x, Game.cars_hash[current_car.phash].y);
 		}
 

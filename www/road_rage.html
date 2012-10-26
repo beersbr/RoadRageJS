@@ -8,6 +8,7 @@
 <script type="text/javascript" src="./javascripts/input.js"></script>
 <script type="text/javascript" src="./javascripts/asset_loader.js"></script>
 <script type="text/javascript" src="./javascripts/sprite_handler.js"></script>
+<script type="text/javascript" src="./javascripts/websocket_client.js"></script>
 
 <script type="text/javascript">
 
@@ -27,6 +28,8 @@ Game.tile_width = 50;
 Game.tile_height = 50;
 Game.tiles = {};
 Game.entities = [];
+Game.cars = [];
+Game.cars_hash = {};
 
 Game.id = 0;
 Game.getId = function(){ return (Game.id++); }
@@ -89,7 +92,9 @@ function Level(args)
 	{
 		// focus_entity is the object that we wanna follow.
 		// camera can be fixed up to be more smooth.
-		
+
+		var car_hash_keys = Object.keys(Game.cars_hash);
+
 		if(focus_entity.x < 320 && focus_entity.vx < 0)
 		{
 			if(this.x > 0)
@@ -137,6 +142,7 @@ function Level(args)
 				{
 					this.y += focus_entity.vy;
 					focus_entity.y -= focus_entity.vy;
+
 				}
 			}
 		}
@@ -167,6 +173,16 @@ function Level(args)
 	this.get_coords_at = function(x, y)
 	{
 		return ([this.x + x, this.y + y]);
+	}
+
+	this.get_coord_x = function(x)
+	{
+		return (this.x+x);
+	}
+
+	this.get_coord_y = function(y)
+	{
+		return (this.y+y)
 	}
 
 	this.load = function(level_name)
@@ -273,6 +289,8 @@ function Player(args) //accepts user input and moves car, calculating speed, sen
 	this.image = args.image || 0;
 
 	this.sprite =  new SpriteHandler({image: this.image, tile_width: this.w, tile_height: this.h});
+
+	this.hash = +(new Date())%99999;
 	
 	this.update = function(time)
 	{
@@ -317,6 +335,13 @@ function Player(args) //accepts user input and moves car, calculating speed, sen
 		this.x += this.vx;
 		this.y += this.vy;
 
+		// console.log(GWebSocket.socket);
+		if(GWebSocket.socket.readyState == 1)
+		{
+			// console.log(this.to_json());
+			GWebSocket.socket.send(this.to_json());
+		}
+
 		return true;
 	}
 
@@ -334,6 +359,45 @@ function Player(args) //accepts user input and moves car, calculating speed, sen
 		// context.fillRect(-1, -1, 2, 2);
 
 		context.restore();
+		return true;
+	}
+
+	this.to_json = function()
+	{
+		return ('{"phash": "'+this.hash+'", "x": "'+Game.level.get_coord_x(this.x)+'", "y": "'+Game.level.get_coord_y(this.y)+'", "lx": "'+Game.level.x+'", "ly": "'+Game.level.y+'"}');
+	}
+}
+
+function Car(args)
+{
+	args = (args == undefined) ? {} : args;
+	Utility.InheretFrom(this, Entity, args);
+
+	this._name = "Car";
+	this._id = Game.getId();
+
+	this.sock_id = args.sock_id || this._id;
+	this.x = args.x || 50;
+	this.y = args.y || 50;
+
+	this.w = 50;
+	this.h = 75;
+
+	this.image = args.image || null;
+	this.phash = "";
+
+	this.sprite = new SpriteHandler({ image: this.image, tile_width: this.w, tile_height: this.h })
+
+	this.update = function(time)
+	{
+		return true;
+	}
+
+	this.draw = function(context)
+	{
+		// console.log("x: ", this.x, "y: ", this.y);
+		this.sprite.draw(context, this.x - Game.level.x, this.y - Game.level.y);
+
 		return true;
 	}
 }
@@ -382,6 +446,38 @@ Game.playing = function()
 		var entity = Game.entities[i];
 		entity.update(Game.elapsed_milliseconds);
 		entity.draw(Game.context);
+	}
+
+
+	var current_car_keys = Object.keys(Game.cars_hash);
+
+	for(var i = 0; i < Game.cars.length; i++)
+	{
+
+		var current_car = Game.cars[i];
+
+		// console.log(Game.cars[i].phash == Game.player.hash)
+
+		if(current_car.phash == Game.player.hash) continue;
+
+		if(current_car_keys.indexOf(current_car.phash) < 0)
+		{
+			Game.cars_hash[current_car.phash] = new Car({image: Game.assets.asset("car"), x: current_car.x, y: current_car.y });
+		}
+		else
+		{
+			Game.cars_hash[current_car.phash].x = current_car.x;
+			Game.cars_hash[current_car.phash].y = current_car.y;
+			// console.log(Game.cars_hash[current_car.phash].x, Game.cars_hash[current_car.phash].y);
+		}
+
+		// Game.cars_hash[current_car.phash].draw(Game.context);
+	}
+
+	for(var i = 0; i < current_car_keys.length; i++)
+	{
+		var key = current_car_keys[i];
+		Game.cars_hash[key].draw(Game.context);
 	}
 
 }
@@ -510,9 +606,8 @@ function init()
 
 	Game.entities.push(Game.player);
 
-	// setInterval(function(){
-	// 	console.log(Game.player.x);
-	// }, 1000);
+	GWebSocket.connect();
+
 }
 
 window.onload = function()

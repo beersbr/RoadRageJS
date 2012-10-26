@@ -1,1 +1,1 @@
-{"tile_width":"3","tile_height":"3","tile_map":["edge_right","","","","edge_right","","","","edge_right"]}
+{"tile_width":"5","tile_height":"5","tile_map":["edge_left","","blank_road","","","blank_road","edge_left","","","blank_road","blank_road","edge_left","","blank_road","","blank_road","edge_left","blank_road","","","edge_left","","blank_road","","blank_road"]}

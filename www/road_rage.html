@@ -350,6 +350,8 @@ function Player(args) //accepts user input and moves car, calculating speed, sen
 		this.x += this.vx;
 		this.y += this.vy;
 
+      //  console.log(this.y)
+
         if (this.x < 0)
         {
             this.x = 10
@@ -362,9 +364,9 @@ function Player(args) //accepts user input and moves car, calculating speed, sen
         {
             this.x = 735
         }
-        if (this.y > 365)
+        if (this.y > 530)
         {
-            this.y = 355
+            this.y = 525
         }
 
 

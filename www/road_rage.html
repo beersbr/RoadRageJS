@@ -20,6 +20,9 @@ GameStates = {
 
 Game = {};
 
+Game.width = 800;
+Game.height = 600;
+
 Game.loading = function()
 {
 	return true;	
@@ -63,19 +66,24 @@ function Level(args)
 	this.w = args.w || 0;
 	this.h = args.h || 0;
 
+	this.image = document.createElement("canvas");
+
+	this.image.width  = this.w;
+	this.image.height = this.h;
+
 	this.update = function()
 	{
-
+		
 	}
 
-	this.draw = function(render_context)
+	this.draw = function(render_context, x, y, w, h)
 	{
-
+		
 	}
 
-	this.load = function(tile_list)
+	this.load = function(level_name)
 	{
-
+		// get the level as an object
 	}
 }
 
@@ -145,14 +153,8 @@ function Player(args) //accepts user input and moves car, calculating speed, sen
 
 	this.draw = function(context)
 	{
-		//use sprite later
-
 		this.sprite.draw(context, this.x, this.y);
 		return true;
-
-		// context.save();
-		// 	context.fillRect(this.x, this.y, this.w, this.h);
-		// context.restore();
 	}
 }
 

@@ -10,9 +10,37 @@
 
 <script type="text/javascript">
 
-function Entity(args){
 
+GameStates = {
+	MENU:    0,
+	PLAYING: 1,
+	PAUSED:  2,
+	LOADING: 10
+}
+
+Game = {};
+
+Game.width = 800;
+Game.height = 600;
+
+Game.loading = function()
+{
+	return true;	
+}
+
+Game.id = 0;
+Game.getId = function()
+{
+	return (Game.id++);
+}
+
+function Entity(args)
+{
 	args = (args == undefined) ? {} : args;
+
+
+	this._name = "Entity";
+	this._id = getId();
 
 	this.x = args.x || 0;
 	this.y = args.y || 0;
@@ -33,11 +61,138 @@ function Entity(args){
 	}
 }
 
+function Level(args)
+{
+	this.w = args.w || 0;
+	this.h = args.h || 0;
+
+	this.image = document.createElement("canvas");
+
+	this.image.width  = this.w;
+	this.image.height = this.h;
+
+	this.update = function()
+	{
+		
+	}
+
+	this.draw = function(render_context, x, y, w, h)
+	{
+		
+	}
+
+	this.load = function(level_name)
+	{
+		// get the level as an object
+	}
+}
+
+function Tile(args)
+{
+	this.image = args.image
+	this.x = args.x || 0;
+	this.y = args.y || 0;
+	this.w = args.w || this.image.w;
+	this.h = args.h || this.image.h;
+
+	this.sprite = new SpriteHandler({image: this.image,
+									 tile_width: this.w,
+									 tile_height: this.h
+									});
+
+	// this will determine whether or not we need to continue to keep track of the tile.
+	this.animated = (this.sprite.frame_count > 0) ? true : false;
+
+	this.Draw = function(render_context)
+	{
+		this.sprite.draw(render_context, this.x, this.y);
+		return this.animated;
+	}
+}	
+	
+function Player(args) //accepts user input and moves car, calculating speed, sending position to server
+{
+	args = (args == undefined) ? {} : args;
+
+	Utility.InheretFrom(this, Entity, args);
+
+	this._name = "Player";
+	this._id = Game.getId();
+
+	this.w = 50;
+	this.h = 75;
+
+	this.x = args.x || 0;
+	this.y = args.y || 0;
+
+	this.angle = args.angle || 0;
+
+	this.image = args.image || 0;
+
+	this.sprite =  new SpriteHandler({image: this.image, tile_width: this.w, tile_height: this.h});
+
+	
+	this.update = function(time)
+	{
+
+
+		var keyboard = Game.keyboard;
+
+		if(keyboard.keyIsDown("up_arrow"))
+		{
+			this.x -= this.player_speed * time;
+		}
+		if(keyboard.keyIsDown("down_arrow"))
+		{
+			this.x += this.player_speed * time;
+		}
+
+		return true;
+	}
+    ;
+
+	this.draw = function(context)
+	{
+		this.sprite.draw(context, this.x, this.y);
+		return true;
+	}
+}
+
+function loop()
+{
+	switch(Game.state)
+	{
+		case LOADING:
+			Game.loading();
+			break;
+
+		case MENU:
+			break;
+
+		case PLAYING:
+			break;
+
+		case PAUSED:
+			break;
+	}
+
+	requestAnimFrame(loop);
+}
+
+// set up the game objects that are needed from the start
+function setup()
+{
+	Game.keyboard = new KeyboardHandler();
+	Game.canvas = document.getElementById("simulation-canvas");
+	Game.assets = new AssetHandler();
+
+	return true;
+}
 
 window.onload = function()
 {
 
-}	
+}
 
 </script>
 

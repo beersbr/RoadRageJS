@@ -1,0 +1,24 @@
+{
+	"tiles": {
+
+		"edge_left": {
+			"is_solid": false,
+			"image_tag": "edge_left"
+		},
+
+		"edge_right": {
+			"is_solid": false,
+			"image_tag": "edge_right"
+		},
+
+		"blank_road": {
+			"is_solid": false,
+			"image_tag": "blank_road"
+		},
+
+		"grass": {
+			"is_solid": false,
+			"image_tag": "grass"
+		}
+	}
+}

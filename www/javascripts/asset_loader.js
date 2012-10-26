@@ -1,4 +1,6 @@
-// TODO: make sure this handles audio as well as images implicitly.
+// TODO: Ideally this would handle any type of data that needed to be retrieved from the server.
+// that is not the case here as we are ONLY using it for images. This needs to be changed in the
+// future.
 
 function AssetHandler()
 {
@@ -13,7 +15,7 @@ function AssetHandler()
 
 	this.asset = function(asset_tag)
 	{
-		return (this.assets[asset_tag] || null);
+		return (this.assets[asset_tag]);
 	}
 
 	this.tagAsset = function(tag, filename)

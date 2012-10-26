@@ -23,6 +23,9 @@ Game = {};
 
 Game.width = 800;
 Game.height = 600;
+Game.tile_width = 50;
+Game.tile_height = 50;
+Game.tiles = {};
 
 // The initial loading function -- somewhat of a hack
 Game.loading = function()
@@ -30,7 +33,8 @@ Game.loading = function()
 	// update
 	if(Game.assets.complete)
 	{
-		Game.gameState = PLAYING;
+		init();
+		Game.state = PLAYING;
 	}
 
 	var completed = Game.assets.load();
@@ -50,17 +54,14 @@ Game.loading = function()
 }
 
 Game.id = 0;
-Game.getId = function()
-{
-	return (Game.id++);
-}
+Game.getId = function(){ return (Game.id++); }
 
 function Entity(args)
 {
 	args = (args == undefined) ? {} : args;
 
 	this._name = "Entity";
-	this._id = getId();
+	this._id = Game.getId();
 
 	this.x = args.x || 0;
 	this.y = args.y || 0;
@@ -86,30 +87,88 @@ function Level(args)
 	this._name = "Level";
 	this._id = Game.getId();
 
+	args = (args == undefined) ? {} : args;
+
+	this.x = 0;
+	this.y = 0;
+
 	this.w = args.w || 0;
 	this.h = args.h || 0;
 
 	this.image = document.createElement("canvas");
+	this.context = this.image.getContext("2d");
 
 	this.image.width  = this.w;
 	this.image.height = this.h;
 
 	this.animated_tiles = [];
+	this.level_json = {};
+	this.tiles = [];
 
 	this.update = function()
 	{
-
+		return true;
 	}
 
-	this.draw = function(render_context, x, y, w, h)
+	this.draw = function(render_context, at_x, at_y)
 	{
+		this.x = at_x;
+		this.y = at_y;
 
+		render_context.drawImage(this.image, this.x, this.y, Game.width, Game.height, 0, 0, Game.width, Game.height);
+
+		return true;
+	}
+
+	// returns an array of the coordinates of the canvas image with relation to the
+	// level map. This will help with collision as well.
+	this.get_coords_at = function(x, y)
+	{
+		return ([this.x + x, this.y + y]);
 	}
 
 	this.load = function(level_name)
 	{
-		// get the level as an object
+		var lvl_json = {};
+
+		// always get level1
+		console.log("WARNING: Always using 'level1.json'");
+
+		$.ajax({
+			url: "json/level1.json",
+			async: false,
+			success: function(ret){
+				lvl_json = ret;
+			}
+		});
+
+		this.level_json = lvl_json;
+
+		// create the level canvas
+		var width = this.level_json.tile_width;
+		var height = this.level_json.tile_height;
+
+		this.image.width = width * Game.tile_width;
+		this.image.height = height * Game.tile_height;
+
+		for(var i = 0; i < height; i++)
+		{
+			this.tiles[i] = [];
+			for(var j = 0; j < width; j++)
+			{
+				var level_index = i * width + j;
+				var current_tile_tag = this.level_json.tile_map[level_index];
+
+				this.tiles[i][j] = Game.tiles[current_tile_tag];
+				
+				var tile_image = this.tiles[i][j].sprite;
+
+				// draw the image on the canvas
+				tile_image.draw(this.context, j * Game.tile_width, i * Game.tile_height);
+			}
+		}
 	}
+
 }
 
 function Tile(args)
@@ -118,10 +177,11 @@ function Tile(args)
 	this._id = Game.getId();
 
 	this.image = args.image
+
 	this.x = args.x || 0;
 	this.y = args.y || 0;
-	this.w = args.w || this.image.w;
-	this.h = args.h || this.image.h;
+	this.w = args.w || this.image.width;
+	this.h = args.h || this.image.height;
 
 	this.sprite = new SpriteHandler({image: this.image,
 									 tile_width: this.w,
@@ -130,10 +190,14 @@ function Tile(args)
 
 	// this will determine whether or not we need to continue to keep track of the tile.
 	this.animated = (this.sprite.frame_count > 0) ? true : false;
+	this.solid = args.is_solid || false;
 
-	this.Draw = function(render_context)
+	this.Draw = function(render_context, at_x, at_y)
 	{
-		this.sprite.draw(render_context, this.x, this.y);
+		var _x = (at_x == undefined) ? this.x : at_x;
+		var _y = (at_y == undefined) ? this.y : at_y;
+
+		this.sprite.draw(render_context, _x, _y);
 		return this.animated;
 	}
 }	
@@ -145,7 +209,6 @@ function Player(args) //accepts user input and moves car, calculating speed, sen
 	Utility.InheretFrom(this, Entity, args);
 
 	this._name = "Player";
-	this._id = Game.getId();
 
 	this.w = 50;
 	this.h = 75;
@@ -153,8 +216,10 @@ function Player(args) //accepts user input and moves car, calculating speed, sen
 	this.x = args.x || 0;
 	this.y = args.y || 0;
 
-	this.acceleration = 4;
+	this.acceleration = 0;
 	this.turn_speed = 2.5;
+	this.speed = 0.35;
+	this.friction = 0.92;
 
 	this.angle = args.angle || 0;
 	this.image = args.image || 0;
@@ -167,24 +232,61 @@ function Player(args) //accepts user input and moves car, calculating speed, sen
 
 		var keyboard = Game.keyboard;
 
-		if(keyboard.keyIsDown("up_arrow"))
+
+		if(keyboard.keyIsDown("w"))
 		{
-			this.x -= this.player_speed * time;
+			this.acceleration += this.speed;
 		}
-		if(keyboard.keyIsDown("down_arrow"))
+		if(keyboard.keyIsDown("s"))
 		{
-			this.x += this.player_speed * time;
+			this.acceleration -= this.speed;
 		}
+		if(keyboard.keyIsDown("a"))
+		{
+			this.angle += this.turn_speed;
+		}
+		if(keyboard.keyIsDown("d"))
+		{
+			this.angle -= this.turn_speed;
+		}
+
+		// turn the angle into radians
+		var rads = (this.angle * (Math.PI/180));
+
+		var mx = Math.cos(mx);
+		var my = Math.sin(my);
+
+		this.vx += (mx * this.acceleration) * time;
+		this.vy += (my * this.acceleration) * time;
+
+		this.x += this.vx;
+		this.y += this.vy;
 
 		return true;
 	}
-    ;
 
 	this.draw = function(context)
 	{
 		this.sprite.draw(context, this.x, this.y);
 		return true;
 	}
+}
+
+Game.playing = function(){
+
+}
+
+function paused()
+{
+	// check for the unpause..
+	var keyboard = Game.keyboard;
+
+	if(keyboard.keyIsDown("p"))
+	{
+		Game.state = PLAYING;
+	}
+
+	// draw some paused stuff
 }
 
 function loop()
@@ -204,6 +306,7 @@ function loop()
 			break;
 
 		case PLAYING:
+			Game.playing();
 			break;
 
 		case PAUSED:
@@ -245,9 +348,47 @@ function setup()
 		Game.assets.tagAsset(key, path);
 	}
 
+	// load the images
 	Game.state = LOADING;
 
 	return true;
+}
+
+// initialize all the compenents with the now loaded assets
+function init()
+{
+	// Load the tiles from the tile map so that the levels will have all the data
+	// they need to be created.
+
+	var tiles_obj = null;
+
+	$.ajax({
+		async: false,
+		url: "json/tiles_map.json",
+		success: function(ret){
+			tiles_obj = ret;
+		}
+	});
+
+	// init the tiles
+	var tiles_keys = Object.keys(tiles_obj["tiles"]);
+	for(var i = 0; i < tiles_keys.length; i++)
+	{
+		var key = tiles_keys[i];
+		var tile = tiles_obj["tiles"][key];
+
+		Game.tiles[key] = new Tile({
+			image: Game.assets.asset(tile.image_tag),
+			is_solid: tile.is_solid
+		});
+	}
+
+	// init the map
+	Game.level = new Level();
+	Game.level.load();
+
+	// init the player
+	Game.player = new Player();
 }
 
 window.onload = function()

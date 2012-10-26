@@ -1,0 +1,78 @@
+body{
+	background-color: black;
+	color: #ccc;
+	font-family: sans-serif;
+}
+
+div.properties{
+	width: 1000px;
+	margin: 0 auto;
+	padding: 10px;
+}
+
+div.toolbar{
+	width: 1000px;
+	margin: 0 auto;
+	border: 1px solid #ccc;
+	margin-bottom: 50px;
+	height: 65px;
+}
+
+div.content{
+	width: 1000px;
+	margin: 0 auto;
+	border: 1px solid #ccc;
+	overflow: scroll;
+	height: 700px;
+}
+
+#map{
+	width: 8000px;
+	height: 8000px;
+}
+
+div.al{
+	float: left;
+	height: 50px;
+}
+
+div.al button{
+	background-color: #101;
+}
+
+table{
+	padding: 0;
+	margin: 0;
+	border-spacing: 0px !important;
+	border-collapse: collapse;
+}
+
+table tr{
+	padding: 0;
+	margin: 0;
+}
+
+table td{
+	width: 50px;
+	height: 50px;
+	border: 1px solid #aaa;
+	padding: 0px;
+	margin: 0px;
+	border-spacing: 0px;
+}
+
+table td img{
+	padding: 0;
+	margin: 0;
+	width: 50px;
+	height: 50px;
+	border-spacing: 0px;
+	display: block;
+}
+
+.table-cell{
+	width: 50px;
+	height: 50px;
+	padding: 0;
+	margin: 0;
+}

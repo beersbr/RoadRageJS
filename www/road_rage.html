@@ -20,6 +20,9 @@
 	LOADING = 10;
 })();
 
+Paused = {};
+Paused.rgb = 0;
+
 Game = {};
 
 Game.width = 800;
@@ -163,7 +166,11 @@ function Level(args)
 			}
 		}
 
-		render_context.drawImage(this.image, this.x, this.y, Game.width, Game.height, 0, 0, Game.width, Game.height);
+		// quick hack for rendering small levels...
+		var gw = (this.w < Game.width ) ? this.w : Game.width;
+		var gh = (this.h < Game.height) ? this.h : Game.height;
+
+		render_context.drawImage(this.image, this.x, this.y, gw, gh, 0, 0, gw, gh);
 
 		return true;
 	}
@@ -222,6 +229,13 @@ function Level(args)
 
 				this.tiles[i][j] = Game.tiles[current_tile_tag];
 				
+				if(this.tiles[i][j] == undefined)
+				{
+					console.log("WARNING: '"+current_tile_tag+"' Tile was not found in the list of tiles");
+					continue;
+				}
+
+
 				var tile_image = this.tiles[i][j].sprite;
 
 				// draw the image on the canvas
@@ -430,7 +444,18 @@ Game.loading = function()
 
 Game.playing = function()
 {
+
+	// TODO: Fix the ordering of the view vs the update of the player so we dont need two loops
+	// and we dont get the flicker
+
 	// update and draw the level
+	for(var i = 0; i < Game.entities.length; i++)
+	{
+		var entity = Game.entities[i];
+		entity.update(Game.elapsed_milliseconds);
+		// entity.draw(Game.context);
+	}
+
 	Game.context.fillRect(0, 0, Game.width, Game.height);
 	Game.level.draw(Game.context, Game.player);
 
@@ -444,7 +469,7 @@ Game.playing = function()
 	for(var i = 0; i < Game.entities.length; i++)
 	{
 		var entity = Game.entities[i];
-		entity.update(Game.elapsed_milliseconds);
+		// entity.update(Game.elapsed_milliseconds);
 		entity.draw(Game.context);
 	}
 
@@ -493,7 +518,17 @@ Game.paused = function()
 		console.log(Game.state);
 	}
 
-	Game.context.fillRect(100, 100, 600, 400);
+	var rgb = parseInt(Math.sin(Paused.rgb+=0.05) * 50 + 100);
+
+	Game.context.fillRect(300, 250, 210, 70);
+	Game.context.save();
+	Game.context.font = "30pt sans-serif"
+	Game.context.fillStyle = "rgb("+rgb+","+rgb+","+rgb+")";
+	Game.context.fillText("PAUSED", 320, 300);
+	Game.context.stroke();
+	Game.context.restore();
+	
+	
 }
 
 function loop()

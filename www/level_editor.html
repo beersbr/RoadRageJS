@@ -1,0 +1,157 @@
+<!doctype html>
+<html>
+<head>
+	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="styles/level_editor.css">
+	<title>Level Editor</title>
+
+<script type="text/javascript">
+
+function create_table(row, col)
+{
+	var table = "<table cellspacing='0' cellpadding='0' id='jmap'>";
+
+	for(var i = 0; i < row; i++)
+	{
+		table += "<tr>";
+
+		for(var j = 0; j < col; j++)
+		{
+			table += "<td data-col='"+j+"' data-row='"+i+"' class='tile-cell' data-img-key=''></td>";
+		}
+
+		table += "</tr>";
+	}
+
+	table += "</table>";
+
+	return table;
+}
+
+window.onload = function()
+{
+	Images = {}
+	Selected = null;
+	Key = null;
+	Width = 0;
+	Height = 0;
+
+	$.ajax({
+		url: "json/image_map.json",
+		success: function(ret){
+			Images = ret.images
+
+			var images_keys = Object.keys(ret.images);
+
+			for(var i = 0; i < images_keys.length; i++)
+			{
+				$("#buttons").append("<div id='btn-"+images_keys[i]+"' class='al'><button class='img-btn' data-img-key='"+images_keys[i]+"'><img src='"+Images[images_keys[i]]+"' /></button></div>");
+			}
+
+			$(".img-btn").on("click", function(evt){
+				var img_key = $(this).attr("data-img-key");
+				var img_val = Images[img_key];
+				Key = img_key;
+
+				// console.log(evt);
+				Selected = "<img src='"+img_val+"' />";
+			});	
+		}
+	});
+
+	$("#create-map").on("click", function(evt){
+		var row = $("#tile-width").val();
+		var col = $("#tile-height").val();
+
+		Width = row;
+		Height = col;
+
+		$("#map").html(create_table(row, col));
+
+		$("td").on("click", function(evt){
+			$(this).attr("data-img-key", Key);
+			$(this).html(Selected);
+		});
+	});
+
+	$("#save-map").on("click", function(evt){
+		//iterate over each table data element and get the image
+		$tbody = $($("#jmap").children()[0]);
+		$rows = $tbody.children();
+
+		lvl = {}
+		lvl.tile_width = Width;
+		lvl.tile_height = Height;
+		lvl.tile_map = []
+
+		for(var i = 0; i < $rows.length; i++)
+		{
+			$row = $($rows[i]);
+			$row_children = $row.children();
+
+			for(var j = 0; j < $row_children.length; j++)
+			{
+				$item = $($row_children[j]);
+				var key = $item.attr("data-img-key");
+				// console.log(key);
+
+				lvl.tile_map.push(key)
+			}
+		}
+
+		var lvl_data = JSON.stringify(lvl);
+
+		var name = $("#name").val();
+
+		$.ajax({
+			url: "/saveLevel",
+			data: {lvl: lvl_data, name: name},
+			type: "post",
+			success: function(evt){
+				// alert("SAVED!");
+				console.log(lvl_data);
+			}
+		})
+
+		// console.log(JSON.stringify(lvl));
+
+		// return (JSON.stringify(lvl));
+	});
+
+}
+
+</script>
+</head>
+<body>
+	<div class='properties'>
+		<label>
+			width in tiles:
+			<input type='text' id='tile-width' value='48'>
+		</label>
+		
+		<label>
+			height in tiles:
+			<input type='text' id='tile-height' value='48'>
+		</label>
+
+		<label>
+			Name:
+			<input type='text' id='name' value='some_level'>
+		</label>
+
+		<button id='create-map'>Create</button>
+		<button id='save-map'>Save</button>
+	</div>
+
+	<div class='toolbar'>
+		<div id='buttons'>
+
+		</div>
+	</div>
+
+	<div class='content'>
+		<div id='map'></div>
+	</div>
+
+</body>
+</html>

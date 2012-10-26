@@ -378,7 +378,7 @@ function Player(args) //accepts user input and moves car, calculating speed, sen
 
 	this.to_json = function()
 	{
-		return ('{"phash": "'+this.hash+'", "x": "'+Game.level.get_coord_x(this.x)+'", "y": "'+Game.level.get_coord_y(this.y)+'", "lx": "'+Game.level.x+'", "ly": "'+Game.level.y+'"}');
+		return ('{"phash": "'+this.hash+'", "x": "'+Game.level.get_coord_x(this.x)+'", "y": "'+Game.level.get_coord_y(this.y)+'", "lx": "'+Game.level.x+'", "ly": "'+Game.level.y+'", "angle": "'+this.angle+'"}');
 	}
 }
 
@@ -487,7 +487,7 @@ Game.playing = function()
 
 		if(current_car_keys.indexOf(current_car.phash) < 0)
 		{
-			Game.cars_hash[current_car.phash] = new Car({image: Game.assets.asset("car"), x: current_car.x, y: current_car.y });
+			Game.cars_hash[current_car.phash] = new Car({image: Game.assets.asset("raceCar"), x: current_car.x, y: current_car.y });
 		}
 		else
 		{

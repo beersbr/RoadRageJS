@@ -16,6 +16,16 @@ div.toolbar{
 	border: 1px solid #ccc;
 	margin-bottom: 50px;
 	height: 65px;
+	overflow: scroll;
+}
+
+div.buttons-toolbar{
+	height: 50px;
+}
+
+div#buttons{
+	width: 80000px;
+	height: 50px;
 }
 
 div.content{

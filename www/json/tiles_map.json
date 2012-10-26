@@ -1,24 +1,182 @@
 {
-	"tiles": {
-
-		"edge_left": {
-			"is_solid": false,
-			"image_tag": "edge_left"
-		},
-
-		"edge_right": {
-			"is_solid": false,
-			"image_tag": "edge_right"
-		},
-
-		"blank_road": {
-			"is_solid": false,
-			"image_tag": "blank_road"
-		},
-
-		"grass": {
-			"is_solid": false,
-			"image_tag": "grass"
-		}
+	"blank_grass": {
+		"is_solid": false,
+		"image_tag": "blank_grass"
+	},
+	"blank_road": {
+		"is_solid": false,
+		"image_tag": "blank_road"
+	},
+	"breakoutGreen": {
+		"is_solid": false,
+		"image_tag": "breakoutGreen"
+	},
+	"edge_bottom": {
+		"is_solid": false,
+		"image_tag": "edge_bottom"
+	},
+	"edge_left": {
+		"is_solid": false,
+		"image_tag": "edge_left"
+	},
+	"edge_right": {
+		"is_solid": false,
+		"image_tag": "edge_right"
+	},
+	"edge_top": {
+		"is_solid": false,
+		"image_tag": "edge_top"
+	},
+	"plain_green": {
+		"is_solid": false,
+		"image_tag": "plain_green"
+	},
+	"raceCar": {
+		"is_solid": false,
+		"image_tag": "raceCar"
+	},
+	"race_car": {
+		"is_solid": false,
+		"image_tag": "race_car"
+	},
+	"road_center_bottom": {
+		"is_solid": false,
+		"image_tag": "road_center_bottom"
+	},
+	"road_center_left": {
+		"is_solid": false,
+		"image_tag": "road_center_left"
+	},
+	"road_center_right": {
+		"is_solid": false,
+		"image_tag": "road_center_right"
+	},
+	"road_center_top": {
+		"is_solid": false,
+		"image_tag": "road_center_top"
+	},
+	"road_left": {
+		"is_solid": false,
+		"image_tag": "road_left"
+	},
+	"road_right": {
+		"is_solid": false,
+		"image_tag": "road_right"
+	},
+	"stripe_left": {
+		"is_solid": false,
+		"image_tag": "stripe_left"
+	},
+	"stripe_right": {
+		"is_solid": false,
+		"image_tag": "stripe_right"
+	},
+	"turn_left1": {
+		"is_solid": false,
+		"image_tag": "turn_left1"
+	},
+	"turn_left1_down": {
+		"is_solid": false,
+		"image_tag": "turn_left1_down"
+	},
+	"turn_left2": {
+		"is_solid": false,
+		"image_tag": "turn_left2"
+	},
+	"turn_left2_down": {
+		"is_solid": false,
+		"image_tag": "turn_left2_down"
+	},
+	"turn_left_in": {
+		"is_solid": false,
+		"image_tag": "turn_left_in"
+	},
+	"turn_left_in2": {
+		"is_solid": false,
+		"image_tag": "turn_left_in2"
+	},
+	"turn_left_in2_down": {
+		"is_solid": false,
+		"image_tag": "turn_left_in2_down"
+	},
+	"turn_left_in_down": {
+		"is_solid": false,
+		"image_tag": "turn_left_in_down"
+	},
+	"turn_left_transition": {
+		"is_solid": false,
+		"image_tag": "turn_left_transition"
+	},
+	"turn_left_transition_bottom": {
+		"is_solid": false,
+		"image_tag": "turn_left_transition_bottom"
+	},
+	"turn_left_transition_down": {
+		"is_solid": false,
+		"image_tag": "turn_left_transition_down"
+	},
+	"turn_left_transition_in": {
+		"is_solid": false,
+		"image_tag": "turn_left_transition_in"
+	},
+	"turn_left_transition_in_down": {
+		"is_solid": false,
+		"image_tag": "turn_left_transition_in_down"
+	},
+	"turn_left_transition_top": {
+		"is_solid": false,
+		"image_tag": "turn_left_transition_top"
+	},
+	"turn_right1": {
+		"is_solid": false,
+		"image_tag": "turn_right1"
+	},
+	"turn_right1_down": {
+		"is_solid": false,
+		"image_tag": "turn_right1_down"
+	},
+	"turn_right2": {
+		"is_solid": false,
+		"image_tag": "turn_right2"
+	},
+	"turn_right2_down": {
+		"is_solid": false,
+		"image_tag": "turn_right2_down"
+	},
+	"turn_right_in": {
+		"is_solid": false,
+		"image_tag": "turn_right_in"
+	},
+	"turn_right_in2": {
+		"is_solid": false,
+		"image_tag": "turn_right_in2"
+	},
+	"turn_right_in_down": {
+		"is_solid": false,
+		"image_tag": "turn_right_in_down"
+	},
+	"turn_right_transition": {
+		"is_solid": false,
+		"image_tag": "turn_right_transition"
+	},
+	"turn_right_transition_bottom": {
+		"is_solid": false,
+		"image_tag": "turn_right_transition_bottom"
+	},
+	"turn_right_transition_down": {
+		"is_solid": false,
+		"image_tag": "turn_right_transition_down"
+	},
+	"turn_right_transition_in": {
+		"is_solid": false,
+		"image_tag": "turn_right_transition_in"
+	},
+	"turn_right_transition_in_down": {
+		"is_solid": false,
+		"image_tag": "turn_right_transition_in_down"
+	},
+	"turn_right_transition_top": {
+		"is_solid": false,
+		"image_tag": "turn_right_transition_top"
 	}
 }

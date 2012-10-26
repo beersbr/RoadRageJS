@@ -15,6 +15,11 @@ function AssetHandler()
 
 	this.asset = function(asset_tag)
 	{
+		if(!this.assets[asset_tag])
+		{
+			console.log("WARNING: Image was not found -- ", asset_tag);
+			return false;
+		}
 		return (this.assets[asset_tag]);
 	}
 

@@ -26,32 +26,7 @@ Game.height = 600;
 Game.tile_width = 50;
 Game.tile_height = 50;
 Game.tiles = {};
-
-// The initial loading function -- somewhat of a hack
-Game.loading = function()
-{
-	// update
-	if(Game.assets.complete)
-	{
-		init();
-		Game.state = PLAYING;
-	}
-
-	var completed = Game.assets.load();
-	var width = 600 * completed;
-
-	// draw
-	Game.context.fillRect(0, 0, 800, 600);
-	Game.context.save();
-		Game.context.strokeStyle = "rgb(200, 200, 200)";
-		Game.context.strokeRect(100, 290, 600, 20);
-		Game.context.stroke();
-		Game.context.fillStyle = "rgb(100, 128, 200)";
-		Game.context.fillRect(100, 290, width, 20);
-	Game.context.restore();
-
-	return true;	
-}
+Game.entities = [];
 
 Game.id = 0;
 Game.getId = function(){ return (Game.id++); }
@@ -110,10 +85,77 @@ function Level(args)
 		return true;
 	}
 
-	this.draw = function(render_context, at_x, at_y)
+	this.draw = function(render_context, focus_entity)
 	{
-		this.x = at_x;
-		this.y = at_y;
+		// focus_entity is the object that we wanna follow.
+		// camera can be fixed up to be more smooth.
+		
+		if(focus_entity.x < 320 && focus_entity.vx < 0)
+		{
+			if(this.x > 0)
+			{
+				if(this.x + focus_entity.vx < 0)
+				{
+					this.x = 0;
+				}
+				else
+				{
+					this.x += focus_entity.vx;
+					focus_entity.x -= focus_entity.vx;
+				}
+
+			}
+
+		}
+
+		if(focus_entity.x > 480 && focus_entity.vx > 0)
+		{
+			if(this.x + Game.width < this.w)
+			{
+				if(this.x + focus_entity.vx + Game.width > this.w)
+				{
+					this.x = this.w - Game.width;
+				}
+				else
+				{
+					this.x += focus_entity.vx;
+					focus_entity.x -= focus_entity.vx;
+				}
+				
+			}
+		}
+
+		if(focus_entity.y < 240 && focus_entity.vy < 0)
+		{
+			if(this.y > 0)
+			{
+				if(this.y + focus_entity.vy < 0)
+				{
+					this.y = 0;
+				}
+				else
+				{
+					this.y += focus_entity.vy;
+					focus_entity.y -= focus_entity.vy;
+				}
+			}
+		}
+
+		if(focus_entity.y > 360 && focus_entity.vy > 0)
+		{
+			if(this.y + Game.height < this.h)
+			{
+				if(this.y + focus_entity.vy + Game.height > this.h)
+				{
+					this.y = this.h - Game.height;
+				}
+				else
+				{
+					this.y += focus_entity.vy;
+					focus_entity.y -= focus_entity.vy;
+				}
+			}
+		}
 
 		render_context.drawImage(this.image, this.x, this.y, Game.width, Game.height, 0, 0, Game.width, Game.height);
 
@@ -150,6 +192,9 @@ function Level(args)
 
 		this.image.width = width * Game.tile_width;
 		this.image.height = height * Game.tile_height;
+
+		this.w = this.image.width;
+		this.h = this.image.height;
 
 		for(var i = 0; i < height; i++)
 		{
@@ -217,25 +262,27 @@ function Player(args) //accepts user input and moves car, calculating speed, sen
 	this.y = args.y || 0;
 
 	this.acceleration = 0;
-	this.turn_speed = 2.5;
-	this.speed = 0.35;
+	this.turn_speed = 13;
+	this.turn_velocity = 0;
+	this.turn_friction = 0.93;
+
+	this.speed = 35;
 	this.friction = 0.92;
 
-	this.angle = args.angle || 0;
+	this.angle = args.angle || 90;
 	this.image = args.image || 0;
 
 	this.sprite =  new SpriteHandler({image: this.image, tile_width: this.w, tile_height: this.h});
-
 	
 	this.update = function(time)
 	{
 
 		var keyboard = Game.keyboard;
 
-
 		if(keyboard.keyIsDown("w"))
 		{
 			this.acceleration += this.speed;
+
 		}
 		if(keyboard.keyIsDown("s"))
 		{
@@ -243,21 +290,29 @@ function Player(args) //accepts user input and moves car, calculating speed, sen
 		}
 		if(keyboard.keyIsDown("a"))
 		{
-			this.angle += this.turn_speed;
+			this.turn_velocity -= this.turn_speed;
 		}
 		if(keyboard.keyIsDown("d"))
 		{
-			this.angle -= this.turn_speed;
+			this.turn_velocity += this.turn_speed;
 		}
 
+		this.turn_velocity *= this.turn_friction;
+		this.angle += this.turn_velocity * time;
+
 		// turn the angle into radians
-		var rads = (this.angle * (Math.PI/180));
+		var rads = ((this.angle-90) * Math.PI/180);
 
-		var mx = Math.cos(mx);
-		var my = Math.sin(my);
+		var mx = Math.cos(rads) * this.acceleration;
+		var my = Math.sin(rads) * this.acceleration;
 
-		this.vx += (mx * this.acceleration) * time;
-		this.vy += (my * this.acceleration) * time;
+		this.acceleration *= this.friction;
+
+		this.vx = mx;
+		this.vy = my;
+
+		this.vx *= time;
+		this.vy *= time;
 
 		this.x += this.vx;
 		this.y += this.vy;
@@ -267,26 +322,82 @@ function Player(args) //accepts user input and moves car, calculating speed, sen
 
 	this.draw = function(context)
 	{
-		this.sprite.draw(context, this.x, this.y);
+		context.save();
+		context.translate(this.x + this.w/2, this.y + this.h/2);
+
+		var rads = this.angle * Math.PI/180;
+
+		context.rotate(rads);
+		this.sprite.draw(context, -(this.w/2), -(this.h/2));
+
+		// context.fillStyle = "rgb(255, 0, 255)";
+		// context.fillRect(-1, -1, 2, 2);
+
+		context.restore();
 		return true;
 	}
 }
 
-Game.playing = function(){
+// The initial loading function -- somewhat of a hack
+Game.loading = function()
+{
+	// update
+	if(Game.assets.complete)
+	{
+		init();
+		Game.state = PLAYING;
+	}
+
+	var completed = Game.assets.load();
+	var width = 600 * completed;
+
+	// draw
+	Game.context.fillRect(0, 0, 800, 600);
+	Game.context.save();
+		Game.context.strokeStyle = "rgb(200, 200, 200)";
+		Game.context.strokeRect(100, 290, 600, 20);
+		Game.context.stroke();
+		Game.context.fillStyle = "rgb(100, 128, 200)";
+		Game.context.fillRect(100, 290, width, 20);
+	Game.context.restore();
+
+	return true;	
+}
+
+Game.playing = function()
+{
+	// update and draw the level
+	Game.context.fillRect(0, 0, Game.width, Game.height);
+	Game.level.draw(Game.context, Game.player);
+
+	// check for paused
+	if(Game.keyboard.keyPressed("p"))
+	{
+		Game.state = PAUSED;
+		console.log(Game.state);
+	}
+
+	for(var i = 0; i < Game.entities.length; i++)
+	{
+		var entity = Game.entities[i];
+		entity.update(Game.elapsed_milliseconds);
+		entity.draw(Game.context);
+	}
 
 }
 
-function paused()
+Game.paused = function()
 {
 	// check for the unpause..
 	var keyboard = Game.keyboard;
 
-	if(keyboard.keyIsDown("p"))
+	if(keyboard.keyPressed("p"))
 	{
 		Game.state = PLAYING;
+		console.log(Game.state);
 	}
 
-	// draw some paused stuff
+	Game.context.fillRect(100, 100, 600, 400);
 }
 
 function loop()
@@ -310,8 +421,13 @@ function loop()
 			break;
 
 		case PAUSED:
+			Game.paused();
 			break;
 	}
+
+	Game.keyboard.cleaner();
+
+	// console.log(Game.elapsed_milliseconds);
 
 	requestAnimFrame(loop);
 }
@@ -388,7 +504,15 @@ function init()
 	Game.level.load();
 
 	// init the player
-	Game.player = new Player();
+	Game.player = new Player({ x: 400, y: 300,
+							   image: Game.assets.asset("car")
+							});
+
+	Game.entities.push(Game.player);
+
+	// setInterval(function(){
+	// 	console.log(Game.player.x);
+	// }, 1000);
 }
 
 window.onload = function()
